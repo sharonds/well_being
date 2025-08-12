@@ -227,7 +227,7 @@ jobs:
           **Branch**: \`micro-${{ github.event.inputs.task_name }}-automation\`" \
             --assignee sharonds
 
-      - name: Update issue with progress
+      - name: Update issue with progress and review context
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -238,13 +238,25 @@ jobs:
 
           ✅ **Micro-automation completed successfully!**
           - Single file implementation: \`source/$(echo ${{ github.event.inputs.task_name }} | sed 's/-//g' | awk '{print toupper(substr($0,1,1))tolower(substr($0,2))}').mc\`  
-          - Branch: \`micro-${{ github.event.inputs.task_name }}-automation\`
+          - Branch: \`${{ env.BRANCH_NAME }}\`
           - PR created for review and validation
 
-          **Key Success**: Simplified automation approach working!
-          **Next**: Ready to scale to more micro-issues with confidence.
+          ## 🔍 Copilot Review Context
+          **Files Changed:** \`source/$(echo ${{ github.event.inputs.task_name }} | sed 's/-//g' | awk '{print toupper(substr($0,1,1))tolower(substr($0,2))}').mc\`
+          **Recommended Prompt:** General Micro-Issue PR Review
+          **Success Criteria:** [Reference original issue for complete criteria]
 
-          🎯 **Automation Strategy Validated** - Single-file, focused tasks succeed."
+          ## 📋 Next Steps for Human Review
+          1. Run pre-review gates: \`./scripts/prepare-copilot-review.sh\`
+          2. Use appropriate prompt from \`automation/guides/REVIEW_PROMPTS.md\`
+          3. Apply Copilot review with success criteria context
+          4. Resolve must-fix items before merge
+          5. Track metrics in follow-up comment
+
+          **Key Success**: Simplified automation approach working!
+          **Ready**: For systematic Copilot code review integration.
+
+          🎯 **Automation + Review Strategy Validated** - End-to-end quality pipeline operational."
 
       - name: Comprehensive rollback on failure
         if: failure()
