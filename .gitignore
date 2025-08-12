@@ -77,4 +77,4 @@ properties.mk
 certificates/
 *.p12
 *.pfx
-*.jks
+*.jksISSUE_PHASE2_DRAFT.md
