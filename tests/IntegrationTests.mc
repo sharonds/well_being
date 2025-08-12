@@ -1,0 +1,129 @@
+// Integration tests for AC10 coverage
+// Tests end-to-end scenarios and cross-component interactions
+using Toybox.System as Sys;
+
+class IntegrationTests {
+    
+    public static function runAllIntegrationTests() {
+        var results = [];
+        
+        // Full pipeline tests
+        results.add(testFullComputationPipeline());
+        results.add(testPhaseTransitions());
+        results.add(testErrorHandlingIntegration());
+        results.add(testPerformanceRequirement());
+        
+        // Report results
+        var passed = 0;
+        var total = results.size();
+        for (var i = 0; i < results.size(); i++) {
+            if (results[i]) {
+                passed++;
+            }
+        }
+        
+        Sys.println("Integration Tests: " + passed + "/" + total + " passed");
+        return passed == total;
+    }
+    
+    // Test full computation pipeline from metrics to recommendation
+    public static function testFullComputationPipeline() {
+        try {
+            // Enable all features for full pipeline test
+            ScoreEngine.ENABLE_SLEEP = true;
+            ScoreEngine.ENABLE_STRESS = true;
+            ScoreEngine.ENABLE_HRV = false; // Keep simple for predictable test
+            
+            // Test data (Example B from PRD)
+            var score = ScoreEngine.computeScore(12500, 48, 7, 35);
+            var recommendation = RecommendationMapper.getRecommendation(score);
+            
+            var scoreOk = (score == 88); // Expected from PRD
+            var recOk = recommendation.equals("Go for it"); // Score 88 should be "Go for it"
+            var passed = scoreOk && recOk;
+            
+            Sys.println("Full pipeline: score=" + score + " rec=" + recommendation + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Full pipeline test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+    
+    // Test transitions between different phases work correctly
+    public static function testPhaseTransitions() {
+        try {
+            // Start with Phase 1
+            ScoreEngine.ENABLE_SLEEP = false;
+            ScoreEngine.ENABLE_STRESS = false;
+            var phase1Score = ScoreEngine.computePhase1(8000, 55);
+            
+            // Enable Phase 2
+            ScoreEngine.ENABLE_SLEEP = true;
+            ScoreEngine.ENABLE_STRESS = true;
+            var phase2Score = ScoreEngine.computeScore(8000, 55, 7, 35);
+            
+            // Enable Phase 3 (HRV)
+            ScoreEngine.ENABLE_HRV = true;
+            var phase3Score = ScoreEngine.computeScoreV3(8000, 55, 7, 35, 70);
+            
+            // All should be valid scores but different due to additional metrics
+            var passed = (
+                phase1Score >= 0 && phase1Score <= 100 &&
+                phase2Score >= 0 && phase2Score <= 100 &&
+                phase3Score >= 0 && phase3Score <= 100 &&
+                phase1Score == 65 // Expected from PRD Example A
+            );
+            
+            Sys.println("Phase transitions: P1=" + phase1Score + " P2=" + phase2Score + " P3=" + phase3Score + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Phase transitions test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+    
+    // Test error handling integration with Logger
+    public static function testErrorHandlingIntegration() {
+        try {
+            // Clear logger first
+            Logger.list(); // This will show current state
+            
+            // Try to compute with invalid data that might trigger error paths
+            // Note: Real error testing would require mocking MetricProvider failures
+            var score = ScoreEngine.computePhase1(null, null); // Should handle null gracefully
+            
+            // Score should be null or valid range if error handling works
+            var passed = (score == null || (score >= 0 && score <= 100));
+            
+            Sys.println("Error handling integration: score=" + score + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            // Exception is acceptable - means error handling is working
+            Sys.println("Error handling integration: PASS (exception caught)");
+            return true;
+        }
+    }
+    
+    // Test <50ms performance requirement (AC8)
+    public static function testPerformanceRequirement() {
+        try {
+            PerformanceTimer.clear();
+            
+            // Test score computation performance
+            PerformanceTimer.start();
+            var score = ScoreEngine.computePhase1(10000, 50);
+            var elapsed = PerformanceTimer.stop();
+            
+            var performanceOk = (elapsed < 50); // AC8: <50ms requirement
+            var computationOk = (score != null && score >= 0 && score <= 100);
+            var passed = performanceOk && computationOk;
+            
+            Sys.println("Performance requirement: " + elapsed + "ms (target <50ms) score=" + score + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Performance requirement test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+}

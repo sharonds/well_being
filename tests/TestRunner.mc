@@ -32,8 +32,27 @@ class TestRunner {
             }
         }
         
-        Sys.println("Tests: " + passed + "/" + total + " passed");
+        Sys.println("Core Tests: " + passed + "/" + total + " passed");
         return passed == total;
+    }
+    
+    // AC10: Comprehensive test suite runner
+    public static function runComprehensiveTestSuite() {
+        Sys.println("=== Running Comprehensive Test Suite (AC10) ===");
+        
+        var coreResults = runAllTests();
+        var infraResults = InfrastructureTests.runAllInfrastructureTests();
+        var integrationResults = IntegrationTests.runAllIntegrationTests();
+        
+        var allPassed = coreResults && infraResults && integrationResults;
+        
+        Sys.println("=== Test Suite Summary ===");
+        Sys.println("Core Tests: " + (coreResults ? "PASS" : "FAIL"));
+        Sys.println("Infrastructure Tests: " + (infraResults ? "PASS" : "FAIL"));  
+        Sys.println("Integration Tests: " + (integrationResults ? "PASS" : "FAIL"));
+        Sys.println("Overall Result: " + (allPassed ? "✅ PASS" : "❌ FAIL"));
+        
+        return allPassed;
     }
     
     // PRD Example A: Steps=8,000; RestingHR=55 => Expected Score=65
