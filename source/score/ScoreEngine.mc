@@ -11,10 +11,9 @@ class ScoreEngine {
         var wSteps = 0.40 / total; // ≈0.5714
         var wRhr = 0.30 / total; // ≈0.4286
         var raw = wSteps * stepsNorm + wRhr * rhrInvNorm;
-        var score = (raw * 100).toNumber();
+        var score = (raw * 100 + 0.5).toNumber(); // Add 0.5 for proper rounding
         if (score > 100) score = 100; if (score < 0) score = 0;
-        // Round to nearest integer
-        return Sys.toNumber(score.format("%0.0f"));
+        return score;
     }
 
     // Normalization helpers
