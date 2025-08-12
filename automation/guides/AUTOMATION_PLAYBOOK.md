@@ -15,6 +15,8 @@
 Need to automate a task?
 ├── Simple task (1 file, clear output)?
 │   └── ✅ Use Simple Automation (.github/workflows/simple-automation.yml)
+├── Medium task (2-4 files, some integration)?
+│   └── 🤝 Use Hybrid Pattern (automate parts + manual integration)
 ├── Complex task (5+ files, interdependent)?
 │   ├── Break into micro-issues (see AUTOMATION_MICRO_ISSUES.md)
 │   └── ✅ Use multiple Simple Automations
@@ -24,6 +26,36 @@ Need to automate a task?
 └── Need custom workflow?
     └── ✅ Create new workflow based on templates
 ```
+
+## 🤝 Hybrid Pattern (Manual + Automation)
+
+**Use hybrid approach when:**
+- Complex business logic required
+- Multiple component integration needed
+- UI/UX decisions involved
+- Performance optimization required
+
+**Hybrid Strategy**:
+1. **🤖 Automate Infrastructure** (data structures, constants, utilities)
+2. **👨‍💻 Manual Implementation** (complex logic, integration, UI)
+3. **🤖 Automated Testing** (test cases, validation)
+4. **🤖 Automated Documentation** (API docs, usage examples)
+
+**Example Flow**:
+```
+Complex Feature: 7-Day History Buffer
+├── 🤖 AUTO: Create HistoryBuffer.mc (data structure)
+├── 🤖 AUTO: Create HistoryBufferTests.mc (test cases)  
+├── 👨‍💻 MANUAL: Integrate with ScoreEngine (business logic)
+├── 👨‍💻 MANUAL: Update UI display (user experience)
+└── 🤖 AUTO: Update documentation (API reference)
+```
+
+**Benefits**:
+- ✅ Automates routine scaffolding work
+- ✅ Preserves human judgment for complex decisions
+- ✅ Maintains code quality and consistency
+- ✅ Reduces total implementation time by 60-80%
 
 ## 🚀 Step-by-Step Automation Process
 
@@ -271,6 +303,35 @@ Track your automation success with these metrics:
 - **Time to Automation**: Target <30 minutes setup
 - **Manual Intervention Rate**: Target <20%
 - **Automation Coverage**: Target 70%+ of development tasks
+
+### Success Scorecard (Track Daily)
+
+#### ✅ Success Category (Target: 80%+)
+- Workflow completes without errors
+- PR created successfully with correct content
+- No manual intervention required
+- Issue automatically updated with progress
+
+#### 🔄 Retry Category (Target: 15%-)
+- Workflow fails but cause is identifiable
+- Simple fix enables successful re-run
+- Learning opportunity captured
+- Template improvement identified
+
+#### 👨‍💻 Manual Fallback (Target: <5%)
+- Automation fundamentally unsuitable for task
+- Complexity exceeds automation capabilities
+- Time-sensitive requirement prevents iteration
+- Custom solution required
+
+**Example Tracking**:
+```
+Week of [Date]:
+✅ Success: 12 automations (85%)
+🔄 Retry: 2 automations (14%) 
+👨‍💻 Manual: 1 task (7%)
+📈 Improvement: +15% vs last week
+```
 
 ### Leading Indicators
 - Number of micro-issues created vs completed

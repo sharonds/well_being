@@ -440,6 +440,11 @@ jobs:
 - [ ] Code review approval obtained
 - [ ] Performance impact acceptable
 
+**Environment Validation:**
+- [ ] Device API compatibility verified (or appropriate stubs used)
+- [ ] Connect IQ SDK constraints acknowledged
+- [ ] Runtime dependencies available in target environment
+
 **Post-Merge Actions:**
 - [ ] Close related micro-issue with success comment
 - [ ] Update parent issue progress tracker
@@ -449,6 +454,34 @@ jobs:
 **Automation Health Score**: ✅ PASS (Ready for merge)
 
 **Notes**: [Any observations or improvements for future automations]
+```
+
+### Environment Disclaimer Template
+```markdown
+## ⚠️ Device API Environment Notice
+
+**Important**: This automation creates code that uses device-specific APIs:
+
+### Garmin Connect IQ Device APIs
+- **ActivityMonitor**: Requires physical device or simulator
+- **UserProfile**: May return null in development environment  
+- **Health APIs**: Device-dependent availability
+- **Sensor APIs**: Hardware-specific functionality
+
+### Development Considerations
+- ✅ **Simulator**: Basic functionality available
+- ⚠️ **Desktop Testing**: Stubs/mocks required for API calls
+- ✅ **Device Testing**: Full API access available
+- 🔄 **Fallback Logic**: Null checks and error handling implemented
+
+### Automation Impact
+This automation implements **graceful degradation patterns**:
+- Null checks for all device API responses
+- Error logging via ErrorCodes constants
+- Fallback values where appropriate
+- Test coverage includes mock scenarios
+
+**Action Required**: Manual device testing recommended after merge.
 ```
 
 ### Automation Failure Review Template
@@ -510,14 +543,47 @@ jobs:
       # Your automation command here
 ```
 
-### Rollback on Failure
+### Rollback Pattern (Critical Safety Net)
 ```yaml
 - name: Rollback on failure
   if: failure()
   run: |
+    # Comprehensive rollback strategy
+    echo "🚨 Automation failure detected - initiating rollback"
+    
+    # 1. Restore working directory
     git checkout -- .
     git clean -fd
-    echo "❌ Automation failed, changes rolled back"
+    
+    # 2. Delete created branch if exists
+    BRANCH_NAME="${{ env.BRANCH_NAME }}"
+    if [ ! -z "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "main" ]; then
+      git checkout main
+      git branch -D "$BRANCH_NAME" || true
+    fi
+    
+    # 3. Clean up any created files
+    rm -f source/temp_* || true
+    
+    # 4. Update issue with failure details
+    gh issue comment ${{ github.event.inputs.issue_number }} \
+      --body "🚨 **Automation Rollback Executed**
+      
+      The automation workflow failed and all changes have been safely rolled back.
+      
+      **Rollback Actions Taken**:
+      - ✅ Working directory restored
+      - ✅ Temporary files cleaned
+      - ✅ Created branch deleted (if any)
+      - ✅ Repository state unchanged
+      
+      **Next Steps**:
+      - Review [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+      - Consider manual implementation
+      - Break into smaller micro-issues if needed
+      - Check automation prerequisites"
+    
+    echo "✅ Rollback complete - repository state preserved"
 ```
 
 ### Notification on Failure

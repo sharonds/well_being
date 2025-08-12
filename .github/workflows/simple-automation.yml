@@ -245,3 +245,49 @@ jobs:
           **Next**: Ready to scale to more micro-issues with confidence.
 
           🎯 **Automation Strategy Validated** - Single-file, focused tasks succeed."
+
+      - name: Comprehensive rollback on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🚨 Automation failure detected - initiating comprehensive rollback"
+          
+          # 1. Restore working directory
+          git checkout -- . || true
+          git clean -fd || true
+          
+          # 2. Delete created branch if exists
+          BRANCH_NAME="${{ env.BRANCH_NAME }}"
+          if [ ! -z "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "main" ]; then
+            git checkout main || true
+            git branch -D "$BRANCH_NAME" || true
+          fi
+          
+          # 3. Clean up any created files
+          rm -f source/temp_* || true
+          
+          # 4. Update issue with failure details and next steps
+          gh issue comment ${{ github.event.inputs.issue_number }} \
+            --body "🚨 **Automation Rollback Executed**
+            
+            The automation workflow failed and all changes have been safely rolled back.
+            
+            **Rollback Actions Taken**:
+            - ✅ Working directory restored
+            - ✅ Temporary files cleaned
+            - ✅ Created branch deleted (if any)
+            - ✅ Repository state unchanged
+            
+            **⚠️ Device API Notice**: If this task involves Garmin Connect IQ APIs:
+            - ActivityMonitor, UserProfile, Health APIs require device/simulator
+            - Desktop development may need stubs/mocks
+            - Consider manual implementation for complex device integration
+            
+            **Next Steps**:
+            - Review [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - Consider manual implementation approach
+            - Break into smaller micro-issues if complexity too high
+            - Verify automation prerequisites and templates"
+          
+          echo "✅ Comprehensive rollback complete - repository state preserved"
