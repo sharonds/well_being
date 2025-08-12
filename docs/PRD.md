@@ -4,7 +4,7 @@
 - Product Name: (TBD) Garmin Well-Being MVP
 - Owner: You (personal project)
 - Created: 2025-08-12
-- Status: Phase 1-3 COMPLETE / Phase 4 PARTIALLY COMPLETE (v0.4)
+- Status: Phase 1-3 COMPLETE / Phase 4 90% COMPLETE (v0.9)
 - Canonical Location: /docs/PRD.md
 
 ## 1. Purpose / Problem Statement
