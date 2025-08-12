@@ -2,6 +2,24 @@
 
 A Connect IQ watch app that provides daily readiness scoring based on wellness metrics.
 
+## Current Phase
+
+**Phase 1:** ✅ Complete
+**Phase 2:** 🚧 In Progress (sleep, stress, persistence, delta display)
+
+### Phase 1 Delivered
+- Score Engine (steps + resting HR, weight redistribution)
+- Recommendation Mapping (3 bands)
+- Metric stubs
+- Manual Refresh + 5-minute throttling
+- Minimal UI (score, metrics, recommendation)
+
+### Phase 2 Goals
+- Add sleep & stress metrics (graceful fallback)
+- Persistence (lastScore, lastScoreDate) & delta display
+- Example B test & redistribution permutations
+- Feature flags: ENABLE_SLEEP, ENABLE_STRESS (default off)
+
 ## 🎯 Automation Status
 
 **GitHub Copilot Coding Agent Pipeline: ACTIVE**
@@ -78,7 +96,7 @@ For actual Connect IQ build:
 monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w
 ```
 
-## Phase 1 Test Vectors
+## Test Vectors (Authoritative Examples)
 
 | Case | Steps | Resting HR | Expected Score | Band | Status |
 |------|-------|------------|----------------|------|--------|
@@ -86,10 +104,11 @@ monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w
 | C | 3,000 | 70 | 25 | Take it easy | ✅ |
 | Min | 0 | 80 | 0 | Take it easy | ✅ |
 | Max | 12,000+ | 40 | 100 | Go for it | ✅ |
+| B | 12,500 | 48 | 88 | Go for it | (Pending Phase 2 enable) |
 
-## Future Phases
+## Roadmap
 
-- **Phase 2**: Add sleep duration, stress metrics, persistence
+- **Phase 2** (current): Sleep, stress, persistence, delta
 - **Phase 3**: Morning auto-refresh, HRV toggle, settings
 - **Phase 4**: Polish, performance optimization
 

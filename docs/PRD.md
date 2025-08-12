@@ -4,7 +4,7 @@
 - Product Name: (TBD) Garmin Well-Being MVP
 - Owner: You (personal project)
 - Created: 2025-08-12
-- Status: Draft (v0.1)
+- Status: Phase 1 COMPLETE / Phase 2 IN PROGRESS (v0.2-draft)
 - Canonical Location: /docs/PRD.md
 
 ## 1. Purpose / Problem Statement
@@ -69,7 +69,7 @@ Deliver a watch app (or data field/widget depending on feasibility) that:
 ## 6. Phased Delivery (Incremental)
 Goal: Earliest end-to-end feedback ASAP.
 
-### Phase 1 (Slice to Visual Feedback Fast)
+### Phase 1 (Slice to Visual Feedback Fast) ✅ COMPLETE
 - F1 (subset: steps, resting HR only)
 - F2 (prototype formula using just steps + resting HR)
 - F3 (basic 3-band recommendation)
@@ -77,11 +77,12 @@ Goal: Earliest end-to-end feedback ASAP.
 Notes: No auto morning refresh yet (manual only). No persistence (delta) yet. No HRV/stress. Throttle enforced (5 min) to avoid rapid recomputes.
 Acceptance: App runs, displays a score and recommendation using two metrics; manual refresh recalculates (respecting throttle) within 1 second.
 
-### Phase 2 (Add Core Metrics & Persistence)
-- Extend F1: add sleep duration proxy & stress/body battery if accessible
-- Refine F2 formula weighting with new metrics
-- Add F6 Persistence (store yesterday score)
-- Enhance F5 UI to show delta and up/down indicator
+### Phase 2 (Add Core Metrics & Persistence) 🚧 IN PROGRESS
+- Extend F1: add sleep duration proxy & stress/body battery (or stress score) if accessible
+- Refine F2 formula weighting with new metrics (sleep + stress), apply weight redistribution
+- Add F6 Persistence (store yesterday score) with keys: lastScore (int), lastScoreDate (YYYYMMDD)
+- Enhance F5 UI to show delta and up/down indicator (hide if first day)
+- Add Example B test + redistribution permutations
 
 ### Phase 3 (Stability & Morning Automation)
 - Implement F4 auto morning refresh logic
@@ -136,10 +137,11 @@ Throttle: Recomputes ignored if <5 minutes since last unless day rollover or fir
 | 40–69 | "Maintain" |
 | 70–100 | "Go for it" |
 
-### 7.4 Persistence
-- Store last score & timestamp in app storage (key-value). Retain up to 2 entries for delta.
+### 7.4 Persistence (Phase 2 Scope)
+- Store last score & date in app storage (key-value).
 - If prior day not found, show no delta indicator.
- - Keys used: lastScore, lastScorePrev, lastScoreDate. Update sequence: shift lastScore -> lastScorePrev when date changes.
+- Keys used (Phase 2 minimal): lastScore (int), lastScoreDate (YYYYMMDD string)
+- Future (optional) lastScorePrev removed from Phase 2 to keep persistence minimal; can reintroduce if comparative history needed.
 
 ### 7.5 Morning Auto Refresh
 - On app start: if current local date differs from stored date and time >= 05:00, trigger recompute once.
@@ -223,13 +225,13 @@ score_raw = 0.5714*0.667 + 0.4286*0.625 ≈ 0.380 + 0.268 = 0.648
 Score = 65 (rounded)
 Band => 40–69 => "Maintain"
 
-Example B (All metrics, no HRV):
+Example B (All metrics, no HRV) – authoritative test vector:
 Steps=12,500 (cap 12,000) -> 1.0
 RestingHR=48 -> (80-48)/40 = 32/40 = 0.8
 Sleep=7h -> 7/8 = 0.875
 Stress=35 -> 1 - 0.35 = 0.65
 score = 0.40*1.0 + 0.30*0.8 + 0.20*0.875 + 0.10*0.65
- = 0.40 + 0.24 + 0.175 + 0.065 = 0.88 -> 88 => "Go for it"
+  = 0.40 + 0.24 + 0.175 + 0.065 = 0.88 -> 88 => "Go for it"
 
 Example C (Missing Sleep & Stress):
 Available: Steps=3,000 (0.25), RestingHR=70 ((80-70)/40=0.25)

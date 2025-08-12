@@ -1,3 +1,8 @@
+## Status Update (12 Aug 2025)
+✅ Phase 1 COMPLETE (merged PR #2) — score engine (steps + resting HR), recommendation bands, manual refresh + throttle, baseline tests.
+🚧 Phase 2 IN PROGRESS — adding sleep, stress, persistence, delta UI, Example B test.
+Repository: https://github.com/sharonds/well_being
+Branch protection + CI + CodeQL enabled
 # Execution Plan (Automation-Prioritized)
 
 Goal: Rapid, low-friction delivery of personal Garmin Well-Being MVP with maximum leverage from automation (planning → Coding Agent → CI gates). Scope constrained to single-user, on-device MVP defined in /docs/PRD.md.
@@ -95,11 +100,29 @@ Legend: Priority (P0 critical blocker; P1 high; P2 medium), Impact (H/M/L), Effo
 - Performance optimization automation beyond simple timing harness.
 
 ## Status Update (12 Aug 2025)
-✅ **Automation Pipeline LIVE**
-- Issue #1 created and assigned to @copilot with enhanced PRD section references
-- Repository: https://github.com/sharonds/well_being
-- Branch protection + CI + CodeQL enabled
-- Coding Agent now has deterministic acceptance criteria per Claude CLI recommendations
+✅ Phase 1 COMPLETE (merged PR #2) — score engine (steps + resting HR), recommendation bands, manual refresh + throttle, baseline tests.
+🚧 Phase 2 IN PROGRESS — adding sleep, stress, persistence, delta UI, Example B test.
+Repository: https://github.com/sharonds/well_being
+Branch protection + CI + CodeQL enabled
+Deterministic acceptance criteria documented in PRD & copilot instructions.
+
+### Phase 2 Objectives & Success Criteria
+| Objective | Success Criteria |
+|-----------|------------------|
+| Add sleep + stress metrics | Metrics nullable; absence triggers redistribution; no crashes |
+| Persistence | lastScore & lastScoreDate stored; delta hidden first day |
+| Example B Test | Score 88 reproducible; fails fast on drift |
+| Redistribution Permutations | Each single-metric-missing path validated in tests |
+| Feature Flags | ENABLE_SLEEP / ENABLE_STRESS default off, toggling safe |
+
+### Phase 2 Task List (Authoritative)
+- [ ] Extend ScoreEngine (sleep, stress; redistribution) (PRD 7.1, 7.2)
+- [ ] Sleep & Stress Metric Providers (graceful null) (PRD 7.1)
+- [ ] Persistence (lastScore, lastScoreDate) (PRD 7.4)
+- [ ] Delta UI logic (hide first run) (PRD 7.4 / 7.7)
+- [ ] Example B + permutations tests (PRD 14.1)
+- [ ] Feature flags ENABLE_SLEEP / ENABLE_STRESS (default off)
+- [ ] README & execution_plan updates committed with feature enablement
 
 ## Next Immediate Actions Recommendation
 ~~If executing now inside repo:~~
