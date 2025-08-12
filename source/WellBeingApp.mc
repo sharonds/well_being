@@ -9,7 +9,7 @@ class WellBeingApp extends Ui.AppBase {
     function getInitialView() { return [ new MainView() ]; }
 }
 
-// Primary view (Phase 1 minimal UI)
+// Primary view with enhanced UI (AC5)
 class MainView extends Ui.View {
     var score = null; // integer 0-100
     var steps = null;
@@ -18,10 +18,15 @@ class MainView extends Ui.View {
     var stressVal = null;
     var recommendation = null;
     var lastCompute = 0; // epoch seconds
-    var lastScorePersisted = null; // previous day score
+    var scoreHistory = null; // ScoreHistory instance for 7-day tracking
     var delta = null; // current score - previous
-    var autoRefreshDate = null; // date string of last auto refresh
-    var lastRunMode = null; // 'auto' or 'manual'
+    var previousScore = null; // yesterday's score for display
+    var lastRunMode = "manual"; // 'auto' or 'manual' for indicator
+
+    function initialize() {
+        View.initialize();
+        scoreHistory = new ScoreHistory();
+    }
 
     function onShow() {
         computeIfAllowed(true, true); // treat onShow as force check but allow auto logic
@@ -33,9 +38,20 @@ class MainView extends Ui.View {
         dc.clear();
         dc.setColor(Ui.COLOR_WHITE, Ui.COLOR_BLACK);
         
-        // Score (top, large)
+        // Score with delta (top, large)
         var scoreText = (score == null) ? "--" : score.toString();
-        dc.drawText(w/2, h/4, Ui.FONT_XLARGE, scoreText, Ui.TEXT_JUSTIFY_CENTER);
+        dc.drawText(w/2, h/4 - 15, Ui.FONT_XLARGE, scoreText, Ui.TEXT_JUSTIFY_CENTER);
+        
+        // Delta and previous score (below main score)
+        if (delta != null && previousScore != null) {
+            var deltaText = (delta >= 0 ? "+" : "") + delta.toString();
+            var prevText = "(Yesterday: " + previousScore.toString() + ")";
+            dc.drawText(w/2, h/4 + 10, Ui.FONT_SMALL, deltaText + " " + prevText, Ui.TEXT_JUSTIFY_CENTER);
+        }
+        
+        // Auto/Manual indicator (top right)
+        var modeText = (lastRunMode.equals("auto")) ? "A" : "M";
+        dc.drawText(w - 15, 15, Ui.FONT_SMALL, modeText, Ui.TEXT_JUSTIFY_CENTER);
         
         // Metrics (middle)
     var stepsText = "Steps: " + ((steps == null) ? "--" : steps.toString());
@@ -65,8 +81,8 @@ class MainView extends Ui.View {
         if (!force && (now - lastCompute) <= 300000) { return; }
 
         // Phase 3 auto-refresh scheduling logic (simplified due to limited time APIs)
-        var today = _currentDateStr();
-        var hour = _currentHourStub(); // returns fixed 7 for now (inside window)
+        var today = Clock.today();
+        var hour = Clock.hour();
         var propsAuto = Sys.getApp().getProperty("autoRefreshDate");
         var manualRunToday = (Sys.getApp().getProperty("lastRunMode") == "manual" && Sys.getApp().getProperty("lastScoreDate") == today);
         var shouldAuto = false;
@@ -92,7 +108,9 @@ class MainView extends Ui.View {
             // Fallback to phase1 if dynamic path fails (should not normally)
             score = (dyn != null) ? dyn : ScoreEngine.computePhase1(steps, restingHR);
             recommendation = RecommendationMapper.getRecommendation(score);
-            _handlePersistence(shouldAuto ? "auto" : (force ? "manual" : "manual"));
+            var runMode = shouldAuto ? "auto" : "manual";
+            lastRunMode = runMode;
+            handlePersistence(runMode);
         } else {
             score = null;
             recommendation = "Data unavailable";
@@ -101,38 +119,30 @@ class MainView extends Ui.View {
         lastCompute = now;
         Ui.requestUpdate();
     }
-}
-
-// Persistence helpers (Phase 2 minimal) stored at app level
-function _handlePersistence() { _handlePersistence("manual"); }
-
-function _handlePersistence(runMode) {
-    try {
-        var today = _currentDateStr();
-        var props = Sys.getApp().getProperty("lastScoreDate");
-        var prevScore = Sys.getApp().getProperty("lastScore");
-        if (props != null && prevScore != null && props != today) {
-            // Previous day found
-            lastScorePersisted = prevScore;
+    
+    function handlePersistence(runMode) {
+        try {
+            var today = Clock.today();
+            
+            // Get previous score for delta calculation
+            previousScore = scoreHistory.getLastScore();
+            delta = scoreHistory.getDelta(score);
+            
+            // Add current score to history
+            if (score != null) {
+                scoreHistory.addScore(score, today);
+            }
+            
+            // Store run mode and auto-refresh date
+            Sys.getApp().setProperty("lastRunMode", runMode);
+            if (runMode == "auto") { 
+                Sys.getApp().setProperty("autoRefreshDate", today); 
+            }
+        } catch(e) {
+            Logger.add("ERROR", ErrorCodes.PERSIST + ": " + e.getErrorMessage());
         }
-        // Compute delta if we have previous day
-        if (lastScorePersisted != null && score != null) { delta = score - lastScorePersisted; } else { delta = null; }
-        // Store today
-        Sys.getApp().setProperty("lastScore", score);
-        Sys.getApp().setProperty("lastScoreDate", today);
-        Sys.getApp().setProperty("lastRunMode", runMode);
-        if (runMode == "auto") { Sys.getApp().setProperty("autoRefreshDate", today); }
-    } catch(e) {
-        Sys.println("Persist error: " + e.getErrorMessage());
-        Logger.add("ERROR", "Persist fail");
     }
 }
 
-function _currentDateStr() {
-    // Placeholder: Without full date API context, return fixed stub or derive from system if available.
-    // TODO Phase 2 refine with actual date retrieval.
-    return "20250812"; // stub date; replace with real date formatting logic.
-}
-
-// Phase 3 stub hour function (returns 7 to simulate morning window); replace with real clock hour retrieval.
-function _currentHourStub() { return 7; }
+// Note: Persistence moved to MainView.handlePersistence()
+// Date/time functions replaced with Clock.today() and Clock.hour() throughout
