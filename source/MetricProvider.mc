@@ -28,15 +28,35 @@ class MetricProvider {
         }
     }
     
-    // Future Phase 2: sleep duration, stress, HRV
+    // Sleep duration from last night (hours) or null if unavailable
     public static function getSleepHours() {
-        // Phase 2 stub: return Example B sleep when feature flag later toggled
-        return 7; // hours
+        // Real sleep API integration (AC1)
+        try {
+            var info = AM.getInfo();
+            if (info != null && info has :sleepTime && info.sleepTime != null) {
+                // Convert milliseconds to hours
+                return info.sleepTime / (1000 * 60 * 60);
+            }
+            return null; // Sleep data not available
+        } catch (e) {
+            Logger.add("ERROR", ErrorCodes.METRIC_SLEEP + ": " + e.getErrorMessage());
+            return null;
+        }
     }
     
     public static function getStressLevel() {
-        // Phase 2 stub: return Example B stress value
-        return 35; // Garmin stress 0-100
+        // Real stress API integration (AC1) 
+        try {
+            // Note: Stress APIs vary by device - using best available method
+            var info = AM.getInfo();
+            if (info != null && info has :stress && info.stress != null) {
+                return info.stress; // Current stress level 0-100
+            }
+            return null; // Stress data not available
+        } catch (e) {
+            Logger.add("ERROR", ErrorCodes.METRIC_STRESS + ": " + e.getErrorMessage());
+            return null;
+        }
     }
 
     // Phase 3 HRV stub (ms). Return null by default to simulate absence unless tests inject value.
