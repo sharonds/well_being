@@ -62,17 +62,40 @@ This is a Garmin Connect IQ watch app for personal well-being tracking. It compu
 
 ## Implementation Approach
 
-### Phase 1 (Complete) ✅
-- Score engine with 2 metrics (steps, resting HR)
-- Weight redistribution: 0.5714/0.4286
-- Manual refresh with START key
-- 5-minute throttling
+### Phase 1-3 (Complete) ✅
+- Score engine with all metrics (steps, resting HR, sleep, stress, HRV)
+- Weight redistribution with feature flags
+- Persistence with delta display
+- Auto-refresh scheduling (morning window)
+- Ring buffer logging (20 entries)
 
-### Phase 2 (Next – Guardrails)
-- Add sleep & stress metrics behind feature flags ENABLE_SLEEP / ENABLE_STRESS
-- Implement persistence (keys: lastScore, lastScoreDate) & delta display (hide first day)
-- Add Example B (score 88) + redistribution permutation tests
-- Maintain backward compatibility (Phase 1 score must remain identical when new flags off)
+### Phase 4 (Current – Production Integration)
+- Replace ALL stub functions with real APIs (no hardcoded dates/times)
+- Implement 7-day score history with circular buffer
+- Add runtime settings menu for feature flag toggles
+- Performance validation (<50ms score computation)
+- Real Garmin health metrics integration (graceful fallbacks)
+- UI enhancements (delta display, auto/manual indicators)
+
+### Hybrid Automation Approach (Current)
+- **GitHub Actions First**: Use `.github/workflows/phase4-automation.yml` for complex multi-task issues
+- **Manual Refinement**: Human validation and completion of automated implementations  
+- **Real API Integration**: Workflows handle actual Garmin SDK integration vs stubs
+- **Structured Output**: Automated commits follow conventional format with AC references
+
+### GitHub Actions Workflow Guidelines
+- **Trigger Method**: Manual dispatch or "automate-phase-4" issue comments
+- **Implementation Scope**: Core repetitive tasks (Clock, metrics, persistence)
+- **Human Validation Required**: UI decisions, performance testing, edge cases
+- **Branch Pattern**: `{phase}-automated-implementation` for workflow branches
+
+### Legacy Copilot Agent Guidelines (Enterprise Only)
+- **Multi-task Issues**: Follow Implementation Plan priority order exactly
+- **Acceptance Criteria**: Each AC must be individually validated and confirmed
+- **Performance Requirements**: Validate timing with test harness, not assumptions
+- **Backward Compatibility**: All existing Phase 1-3 functionality must remain identical
+- **Error Handling**: Wrap ALL API calls with try-catch and structured logging
+- **Branch Naming**: Use descriptive names like `phase-4-implementation`, not generic names
 
 ### Weight Redistribution Formula (All Phases)
 activeWeight(metric) = baseWeight(metric) / Σ(baseWeight for present metrics)
