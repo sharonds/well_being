@@ -14,8 +14,12 @@ class MainView extends Ui.View {
     var score = null; // integer 0-100
     var steps = null;
     var restingHR = null;
+    var sleepHrs = null;
+    var stressVal = null;
     var recommendation = null;
     var lastCompute = 0; // epoch seconds
+    var lastScorePersisted = null; // previous day score
+    var delta = null; // current score - previous
 
     function onShow() {
         computeIfAllowed(true);
@@ -32,10 +36,14 @@ class MainView extends Ui.View {
         dc.drawText(w/2, h/4, Ui.FONT_XLARGE, scoreText, Ui.TEXT_JUSTIFY_CENTER);
         
         // Metrics (middle)
-        var stepsText = "Steps: " + ((steps == null) ? "--" : steps.toString());
-        var hrText = "RestHR: " + ((restingHR == null) ? "--" : restingHR.toString());
-        dc.drawText(w/2, h/2 - 20, Ui.FONT_SMALL, stepsText, Ui.TEXT_JUSTIFY_CENTER);
-        dc.drawText(w/2, h/2 + 10, Ui.FONT_SMALL, hrText, Ui.TEXT_JUSTIFY_CENTER);
+    var stepsText = "Steps: " + ((steps == null) ? "--" : steps.toString());
+    var hrText = "RestHR: " + ((restingHR == null) ? "--" : restingHR.toString());
+    var sleepText = "Sleep: " + ((ScoreEngine.ENABLE_SLEEP && sleepHrs != null) ? sleepHrs.toString() + "h" : "--");
+    var stressText = "Stress: " + ((ScoreEngine.ENABLE_STRESS && stressVal != null) ? stressVal.toString() : "--");
+    dc.drawText(w/2, h/2 - 30, Ui.FONT_SMALL, stepsText, Ui.TEXT_JUSTIFY_CENTER);
+    dc.drawText(w/2, h/2 - 10, Ui.FONT_SMALL, hrText, Ui.TEXT_JUSTIFY_CENTER);
+    dc.drawText(w/2, h/2 + 10, Ui.FONT_SMALL, sleepText, Ui.TEXT_JUSTIFY_CENTER);
+    dc.drawText(w/2, h/2 + 30, Ui.FONT_SMALL, stressText, Ui.TEXT_JUSTIFY_CENTER);
         
         // Recommendation (bottom)
         var recText = (recommendation == null) ? "Data unavailable" : recommendation;
@@ -59,11 +67,16 @@ class MainView extends Ui.View {
         // Fetch metrics through interface
         steps = MetricProvider.getSteps();
         restingHR = MetricProvider.getRestingHeartRate();
-        
-        // Compute score if we have minimum required metrics
+        sleepHrs = MetricProvider.getSleepHours();
+        stressVal = MetricProvider.getStressLevel();
+
+        // Compute using dynamic engine (Phase 2). Feature flags ensure backward compatibility.
         if (MetricProvider.hasMinimumMetrics()) {
-            score = ScoreEngine.computePhase1(steps, restingHR);
+            var dyn = ScoreEngine.computeScore(steps, restingHR, sleepHrs, stressVal);
+            // Fallback to phase1 if dynamic path fails (should not normally)
+            score = (dyn != null) ? dyn : ScoreEngine.computePhase1(steps, restingHR);
             recommendation = RecommendationMapper.getRecommendation(score);
+            _handlePersistence();
         } else {
             score = null;
             recommendation = "Data unavailable";
@@ -72,4 +85,34 @@ class MainView extends Ui.View {
         lastCompute = now;
         Ui.requestUpdate();
     }
+}
+
+// Persistence helpers (Phase 2 minimal) stored at app level
+function _handlePersistence() {
+    try {
+        var today = _currentDateStr();
+        var props = Sys.getApp().getProperty("lastScoreDate");
+        var prevScore = Sys.getApp().getProperty("lastScore");
+        if (props != null && prevScore != null && props != today) {
+            // Previous day found
+            lastScorePersisted = prevScore;
+        }
+        // Compute delta if we have previous day
+        if (lastScorePersisted != null && score != null) {
+            delta = score - lastScorePersisted;
+        } else {
+            delta = null;
+        }
+        // Store today
+        Sys.getApp().setProperty("lastScore", score);
+        Sys.getApp().setProperty("lastScoreDate", today);
+    } catch(e) {
+        Sys.println("Persist error: " + e.getErrorMessage());
+    }
+}
+
+function _currentDateStr() {
+    // Placeholder: Without full date API context, return fixed stub or derive from system if available.
+    // TODO Phase 2 refine with actual date retrieval.
+    return "20250812"; // stub date; replace with real date formatting logic.
 }

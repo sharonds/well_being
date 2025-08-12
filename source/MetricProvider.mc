@@ -28,15 +28,17 @@ class MetricProvider {
     
     // Future Phase 2: sleep duration, stress, HRV
     public static function getSleepHours() {
-        return null; // Not implemented in Phase 1
+        // Phase 2 stub: return Example B sleep when feature flag later toggled
+        return 7; // hours
     }
     
     public static function getStressLevel() {
-        return null; // Not implemented in Phase 1  
+        // Phase 2 stub: return Example B stress value
+        return 35; // Garmin stress 0-100
     }
     
     // Utility to check if we have minimum required metrics for Phase 1
     public static function hasMinimumMetrics() {
-        return (getSteps() != null && getRestingHeartRate() != null);
+        return (getSteps() != null && getRestingHeartRate() != null); // unchanged for backward compat
     }
 }

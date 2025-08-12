@@ -9,7 +9,10 @@ class TestRunner {
         // Test ScoreEngine examples from PRD
         results.add(testScoreEngineExampleA());
         results.add(testScoreEngineExampleC()); 
+    results.add(testScoreEngineExampleBFull());
+    results.add(testRedistributionPermutationMissingSleep());
         results.add(testScoreEngineBounds());
+    results.add(testBackwardCompatibilityPhase1());
         
         // Test RecommendationMapper bands
         results.add(testRecommendationBands());
@@ -43,6 +46,38 @@ class TestRunner {
         var expected = 25;
         var passed = (score == expected);
         Sys.println("Example C: score=" + score + " expected=" + expected + " " + (passed ? "PASS" : "FAIL"));
+        return passed;
+    }
+
+    // PRD Example B: Steps=12500; RestHR=48; Sleep=7h; Stress=35 => Expected 88 when both feature flags enabled
+    public static function testScoreEngineExampleBFull() {
+        // Enable flags
+        ScoreEngine.ENABLE_SLEEP = true; ScoreEngine.ENABLE_STRESS = true;
+        var score = ScoreEngine.computeScore(12500, 48, 7, 35);
+        var expected = 88;
+        var passed = (score == expected);
+        Sys.println("Example B: score=" + score + " expected=" + expected + " " + (passed ? "PASS" : "FAIL"));
+        return passed;
+    }
+
+    // Redistribution permutation: Missing sleep only (stress disabled or null)
+    // Provide steps & rhr & stress (flag off) => weights should redistribute between steps & rhr only producing Phase1 logic
+    public static function testRedistributionPermutationMissingSleep() {
+        ScoreEngine.ENABLE_SLEEP = false; ScoreEngine.ENABLE_STRESS = false;
+        var scoreDyn = ScoreEngine.computeScore(8000, 55, null, null);
+        var scoreP1 = ScoreEngine.computePhase1(8000, 55);
+        var passed = (scoreDyn == scoreP1 && scoreDyn == 65);
+        Sys.println("Redistrib missing sleep: dyn=" + scoreDyn + " phase1=" + scoreP1 + " " + (passed ? "PASS" : "FAIL"));
+        return passed;
+    }
+
+    // Backward compatibility: When flags disabled, computeScore should match Phase1 for any inputs ignoring sleep/stress
+    public static function testBackwardCompatibilityPhase1() {
+        ScoreEngine.ENABLE_SLEEP = false; ScoreEngine.ENABLE_STRESS = false;
+        var scoreDyn = ScoreEngine.computeScore(3000, 70, 7, 35); // Extra metrics provided but flags off
+        var scoreP1 = ScoreEngine.computePhase1(3000, 70);
+        var passed = (scoreDyn == scoreP1 && scoreDyn == 25);
+        Sys.println("Backward compat: dyn=" + scoreDyn + " phase1=" + scoreP1 + " " + (passed ? "PASS" : "FAIL"));
         return passed;
     }
     
