@@ -2,10 +2,17 @@
 
 ## Automation Options Available
 
-### Option 1: GitHub Copilot Coding Agent (Enterprise Only)
-- **Requirements**: GitHub Enterprise Cloud plan + organization setup
-- **Access**: Limited, not available for most personal/small repositories
-- **Status**: ❌ Not available for this project
+### Option 1: GitHub Copilot Coding Agent (Pro/Business/Enterprise)
+- **Requirements**: GitHub Copilot Pro, Business, or Enterprise plan
+- **Availability**: All GitHub repositories (except managed user accounts or explicitly disabled)
+- **Status**: ⚠️ May be available but not enabled for this repository
+- **Documentation**: https://docs.github.com/en/copilot/concepts/coding-agent/coding-agent
+
+#### How to Enable GitHub Copilot Agent:
+1. **Check Plan**: Verify GitHub Copilot Pro/Business/Enterprise subscription
+2. **Repository Settings**: Enable Copilot features in repository settings
+3. **Assignment Method**: Assign Copilot user directly to issues (not @mentions)
+4. **Alternative**: Use VS Code with GitHub Copilot extension for similar functionality
 
 ### Option 2: GitHub Actions Automation (Recommended)
 - **Requirements**: Standard GitHub account with Actions enabled
