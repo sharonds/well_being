@@ -36,6 +36,11 @@ class MetricProvider {
         // Phase 2 stub: return Example B stress value
         return 35; // Garmin stress 0-100
     }
+
+    // Phase 3 HRV stub (ms). Return null by default to simulate absence unless tests inject value.
+    public static function getHRV() {
+        return null; // Future: integrate with Health API providing rMSSD-like metric
+    }
     
     // Utility to check if we have minimum required metrics for Phase 1
     public static function hasMinimumMetrics() {

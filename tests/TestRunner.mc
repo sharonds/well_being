@@ -17,6 +17,11 @@ class TestRunner {
         // Test RecommendationMapper bands
         results.add(testRecommendationBands());
         results.add(testRecommendationEdgeCases());
+    // Phase 3 tests
+    results.add(testSchedulerAutoWindow());
+    results.add(testSchedulerLateOpen());
+    results.add(testHRVWeighting());
+    results.add(testLoggerRingBuffer());
         
         // Report results
         var passed = 0;
@@ -120,5 +125,50 @@ class TestRunner {
         
         Sys.println("Edge cases test: null=" + recNull + " -1=" + recNeg + " 101=" + recHigh + " " + (edgesOk ? "PASS" : "FAIL"));
         return edgesOk;
+    }
+
+    // Auto-refresh should trigger within window when not already run.
+    public static function testSchedulerAutoWindow() {
+        var ok = Scheduler.shouldAuto("20250812", 7, null, null, false, 0, 400000);
+        Sys.println("Scheduler auto window: " + (ok ? "PASS" : "FAIL"));
+        return ok;
+    }
+
+    // Late open after 8: should compute if no score
+    public static function testSchedulerLateOpen() {
+        var late = Scheduler.shouldLateCompute("20250812", 9, null, false);
+        Sys.println("Scheduler late open: " + (late ? "PASS" : "FAIL"));
+        return late;
+    }
+
+    // HRV weighting & backward compat
+    public static function testHRVWeighting() {
+        // With HRV disabled, V3 should match Phase 2 computeScore
+        ScoreEngine.ENABLE_SLEEP = true; ScoreEngine.ENABLE_STRESS = true; ScoreEngine.ENABLE_HRV = false;
+        var noHrv = ScoreEngine.computeScoreV3(12500, 48, 7, 35, null);
+        var phase2 = ScoreEngine.computeScore(12500, 48, 7, 35);
+        var passNoHrv = (noHrv == phase2 && noHrv == 88);
+        // Enable HRV with mid value (e.g., 70ms). Expect score different but within bounds.
+        ScoreEngine.ENABLE_HRV = true;
+        var withHrv = ScoreEngine.computeScoreV3(12500, 48, 7, 35, 70);
+        var passBounds = (withHrv != null && withHrv >= 0 && withHrv <= 100);
+        var passed = passNoHrv && passBounds;
+        Sys.println("HRV weighting test: noHrv=" + noHrv + " withHrv=" + withHrv + " " + (passed?"PASS":"FAIL"));
+        return passed;
+    }
+
+    // Logger ring buffer overwrite behavior
+    public static function testLoggerRingBuffer() {
+        // Add more than capacity
+        for (var i=0;i<25;i++){ Logger.add("INFO", "msg" + i.toString()); }
+        var list = Logger.list();
+        var sizeOk = (list.size() == 20);
+        // Oldest should be msg5 if capacity 20 (we added 0..24 -> last 20 are 5..24)
+        var oldest = list[0][:msg];
+        var expectedOldest = "msg5";
+        var orderOk = (oldest.equals(expectedOldest));
+        var passed = sizeOk && orderOk;
+        Sys.println("Logger ring buffer: sizeOk="+sizeOk+" orderOk="+orderOk+" "+(passed?"PASS":"FAIL"));
+        return passed;
     }
 }

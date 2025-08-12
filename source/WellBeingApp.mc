@@ -20,9 +20,11 @@ class MainView extends Ui.View {
     var lastCompute = 0; // epoch seconds
     var lastScorePersisted = null; // previous day score
     var delta = null; // current score - previous
+    var autoRefreshDate = null; // date string of last auto refresh
+    var lastRunMode = null; // 'auto' or 'manual'
 
     function onShow() {
-        computeIfAllowed(true);
+        computeIfAllowed(true, true); // treat onShow as force check but allow auto logic
     }
 
     function onUpdate(dc) {
@@ -58,10 +60,23 @@ class MainView extends Ui.View {
         return false;
     }
 
-    function computeIfAllowed(force) {
+    function computeIfAllowed(force, isShow) {
         var now = Sys.getTimer();
-        if (!force && (now - lastCompute) <= 300000) { // 5 min throttle
-            return;
+        if (!force && (now - lastCompute) <= 300000) { return; }
+
+        // Phase 3 auto-refresh scheduling logic (simplified due to limited time APIs)
+        var today = _currentDateStr();
+        var hour = _currentHourStub(); // returns fixed 7 for now (inside window)
+        var propsAuto = Sys.getApp().getProperty("autoRefreshDate");
+        var manualRunToday = (Sys.getApp().getProperty("lastRunMode") == "manual" && Sys.getApp().getProperty("lastScoreDate") == today);
+        var shouldAuto = false;
+        if (isShow) {
+            // Decide if we should auto-run; reuse Scheduler functions for testability
+            shouldAuto = Scheduler.shouldAuto(today, hour, Sys.getApp().getProperty("lastScoreDate"), propsAuto, manualRunToday, lastCompute, now);
+            if (!shouldAuto) {
+                var late = Scheduler.shouldLateCompute(today, hour, Sys.getApp().getProperty("lastScoreDate"), manualRunToday);
+                if (late) { shouldAuto = true; }
+            }
         }
         
         // Fetch metrics through interface
@@ -69,14 +84,15 @@ class MainView extends Ui.View {
         restingHR = MetricProvider.getRestingHeartRate();
         sleepHrs = MetricProvider.getSleepHours();
         stressVal = MetricProvider.getStressLevel();
+        var hrv = MetricProvider.getHRV();
 
         // Compute using dynamic engine (Phase 2). Feature flags ensure backward compatibility.
         if (MetricProvider.hasMinimumMetrics()) {
-            var dyn = ScoreEngine.computeScore(steps, restingHR, sleepHrs, stressVal);
+            var dyn = ScoreEngine.computeScoreV3(steps, restingHR, sleepHrs, stressVal, hrv);
             // Fallback to phase1 if dynamic path fails (should not normally)
             score = (dyn != null) ? dyn : ScoreEngine.computePhase1(steps, restingHR);
             recommendation = RecommendationMapper.getRecommendation(score);
-            _handlePersistence();
+            _handlePersistence(shouldAuto ? "auto" : (force ? "manual" : "manual"));
         } else {
             score = null;
             recommendation = "Data unavailable";
@@ -88,7 +104,9 @@ class MainView extends Ui.View {
 }
 
 // Persistence helpers (Phase 2 minimal) stored at app level
-function _handlePersistence() {
+function _handlePersistence() { _handlePersistence("manual"); }
+
+function _handlePersistence(runMode) {
     try {
         var today = _currentDateStr();
         var props = Sys.getApp().getProperty("lastScoreDate");
@@ -98,16 +116,15 @@ function _handlePersistence() {
             lastScorePersisted = prevScore;
         }
         // Compute delta if we have previous day
-        if (lastScorePersisted != null && score != null) {
-            delta = score - lastScorePersisted;
-        } else {
-            delta = null;
-        }
+        if (lastScorePersisted != null && score != null) { delta = score - lastScorePersisted; } else { delta = null; }
         // Store today
         Sys.getApp().setProperty("lastScore", score);
         Sys.getApp().setProperty("lastScoreDate", today);
+        Sys.getApp().setProperty("lastRunMode", runMode);
+        if (runMode == "auto") { Sys.getApp().setProperty("autoRefreshDate", today); }
     } catch(e) {
         Sys.println("Persist error: " + e.getErrorMessage());
+        Logger.add("ERROR", "Persist fail");
     }
 }
 
@@ -116,3 +133,6 @@ function _currentDateStr() {
     // TODO Phase 2 refine with actual date retrieval.
     return "20250812"; // stub date; replace with real date formatting logic.
 }
+
+// Phase 3 stub hour function (returns 7 to simulate morning window); replace with real clock hour retrieval.
+function _currentHourStub() { return 7; }
