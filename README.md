@@ -1,36 +1,103 @@
 # Garmin Well-Being MVP
 
-Personal on-device readiness score experiment. See /docs/PRD.md and /execution_plan.md.
+A Connect IQ watch app that provides daily readiness scoring based on wellness metrics.
 
-## Phase 1 Slice (Current)
-Minimal watch app computing a prototype score (steps + resting HR placeholders) with manual START key refresh throttled to 5 minutes.
+## 🎯 Automation Status
 
-## Build (Planned)
-Connect IQ SDK 7.2.0 (toolchain setup instructions TBD). CI will run build + unit tests + CodeQL.
+**GitHub Copilot Coding Agent Pipeline: ACTIVE**
+- ✅ Issue #1 created with enhanced PRD section references  
+- ✅ Repository configured with branch protection and CI/CodeQL
+- ✅ Coding Agent assigned and ready for systematic implementation
+- 🔄 Automated development now in progress - monitoring phase
 
-### Local Build (Planned Steps)
-1. Install Connect IQ SDK 7.2.0 and ensure `monkeyc` is on PATH.
-2. Generate a developer key: `monkeybrains --generate-key developer_key.der` (or via SDK manager).
-3. Compile: `monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w` (add device / product flags as needed).
-4. Run in simulator: `connectiq` (open simulator and load PRG).
+The project is now fully automated! The Coding Agent will:
+1. Create feature branches for each Phase 1 task
+2. Implement Connect IQ app functionality per PRD specifications  
+3. Submit PRs with CI validation and tests
+4. Progress through phases systematically
 
-Placeholder artifacts exist until SDK steps are integrated.
+## Phase 1 Implementation Status
 
-## Automation Flow
-1. Single Issue with checklist.
-2. Assign to @copilot to trigger Coding Agent once scaffold & CI are in main.
-3. Each PR must keep tests green and expand coverage as features land.
+✅ **Completed Features:**
+- **Score Engine**: Computes readiness score (0-100) from steps and resting heart rate
+- **Recommendation Mapping**: Maps scores to actionable guidance
+- **Metric Interface**: Stubbed data access for Phase 1 metrics
+- **Manual Refresh**: User-triggered score recomputation with 5-minute throttling
+- **Minimal UI**: Displays score, metrics, and recommendation
 
-## CI Status (Current)
-- Build: Placeholder echo steps (needs real Connect IQ build command)
-- Tests: Placeholder (no harness yet)
-- CodeQL: Enabled with placeholder language (JS) to activate security workflow
+## Architecture
 
-## Next Engineering TODOs
-- Integrate real Connect IQ SDK install & compilation in ci.yml
-- Choose or implement unit test framework approach
-- Replace CodeQL placeholder language once/if Monkey C support emerges (retain for workflow gating)
- - Add developer key management (encrypted in repo or manual secret) for CI signing if required
+### Core Components
+
+- **`WellBeingApp.mc`**: Main application and UI view
+- **`ScoreEngine.mc`**: Score calculation with weight redistribution logic
+- **`RecommendationMapper.mc`**: Maps scores to recommendation bands
+- **`MetricProvider.mc`**: Metric access interface (Phase 1 stubs)
+
+### Score Calculation (Phase 1)
+
+Uses only steps and resting heart rate with weight redistribution:
+
+```
+Original weights: steps=0.40, resting_hr=0.30
+Redistributed: steps=0.5714, resting_hr=0.4286
+
+steps_norm = min(steps, 12000) / 12000
+rhr_inv_norm = (80 - clamp(rhr, 40, 80)) / 40
+
+score = (0.5714 * steps_norm + 0.4286 * rhr_inv_norm) * 100
+```
+
+### Recommendation Bands
+
+- **0-39**: "Take it easy"
+- **40-69**: "Maintain"  
+- **70-100**: "Go for it"
+
+## Usage
+
+1. **Manual Refresh**: Press START key to recompute score
+2. **Throttling**: Recomputation limited to once per 5 minutes
+3. **Display**: Shows current score, steps, resting HR, and recommendation
+
+## Testing
+
+Run tests with: `bash scripts/run_tests.sh`
+
+Validates:
+- PRD test vectors (Example A: 8000 steps, 55 BPM → Score 65)
+- Recommendation band boundaries
+- Edge cases and error handling
+
+## Build
+
+Simulated build: Creates `build/WellBeing.prg` placeholder
+
+For actual Connect IQ build:
+```bash
+monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w
+```
+
+## Phase 1 Test Vectors
+
+| Case | Steps | Resting HR | Expected Score | Band | Status |
+|------|-------|------------|----------------|------|--------|
+| A | 8,000 | 55 | 65 | Maintain | ✅ |
+| C | 3,000 | 70 | 25 | Take it easy | ✅ |
+| Min | 0 | 80 | 0 | Take it easy | ✅ |
+| Max | 12,000+ | 40 | 100 | Go for it | ✅ |
+
+## Future Phases
+
+- **Phase 2**: Add sleep duration, stress metrics, persistence
+- **Phase 3**: Morning auto-refresh, HRV toggle, settings
+- **Phase 4**: Polish, performance optimization
+
+## Development
+
+- **Language**: Monkey C (Connect IQ SDK 7.2.0)
+- **Target**: Forerunner 965 (with graceful degradation)
+- **Type**: Watch App
 
 ## Disclaimer
 Not medical advice. Personal experimentation only.
