@@ -18,7 +18,7 @@ gh run list --limit 3
 gh pr list --limit 2
 ```
 
-**📚 Complete guides**: `AUTOMATION_QUICKSTART.md` | `AUTOMATION_PLAYBOOK.md` | `AUTOMATION_TEMPLATES.md`
+**📚 Complete guides**: `automation/guides/` | Quick access: `automation/README.md`
 
 ## Current Phase
 

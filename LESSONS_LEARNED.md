@@ -184,7 +184,7 @@ Created `.github/workflows/phase4-automation.yml` for automated Phase 4 executio
 4. **Quick Iteration**: Minutes from trigger to validated result
 
 ### Automation Mastery Framework
-Created comprehensive guides:
+Created comprehensive guides (organized in `automation/guides/`):
 - `AUTOMATION_PLAYBOOK.md` - Complete end-to-end automation guide
 - `AUTOMATION_QUICKSTART.md` - 5-minute first automation success
 - `AUTOMATION_TEMPLATES.md` - Copy-paste templates for all patterns

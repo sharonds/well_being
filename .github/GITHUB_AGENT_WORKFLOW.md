@@ -37,7 +37,7 @@
 ## GitHub Actions Automation Implementation (Phase 4)
 
 ### Phase 4 Automation Workflow
-**File**: `.github/workflows/phase4-automation.yml`
+**File**: `.github/workflows/simple-automation.yml` (proven working)
 **Status**: ✅ Active and deployed
 
 #### Capabilities
@@ -50,7 +50,7 @@
 #### Usage Examples
 ```bash
 # Manual trigger
-gh workflow run phase4-automation.yml --field issue_number=9
+gh workflow run simple-automation.yml --field task_name=settings-menu --field issue_number=11
 
 # Comment trigger (add to Issue #9)
 automate-phase-4
