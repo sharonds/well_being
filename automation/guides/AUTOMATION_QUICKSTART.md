@@ -158,6 +158,22 @@ gh workflow run simple-automation.yml --field task_name=[TASK] --field issue_num
 - ✅ You contribute back automation improvements
 - ✅ You help others automate their work
 
+## 📚 Automation Glossary
+
+**Key Terms:**
+- **Automation**: GitHub Actions workflow that implements code without human coding
+- **Branch**: Isolated development environment (`auto-task-timestamp` format)  
+- **Micro-Issue**: Single-deliverable issue designed for automation success
+- **Run**: Single execution of a workflow (has unique run number/ID)
+- **Task Name**: Identifier for automation template (e.g., `error-codes`, `settings-menu`)
+- **Template**: Pre-defined code pattern used by automation workflows
+- **Workflow Dispatch**: Manual trigger method for GitHub Actions workflows
+
+**Success Indicators:**
+- **Green CI**: All automated tests and checks pass
+- **Clean Branch**: No merge conflicts or manual interventions needed
+- **Template Match**: Generated code follows project conventions exactly
+
 ---
 
 **Next Steps:**

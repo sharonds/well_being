@@ -36,7 +36,9 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Automation"
           git config --global user.email "actions@github.com"
-          git checkout -b auto-${{ github.event.inputs.task_name }}-${{ github.run_number }}
+          # Standardized branch naming: auto-<task>-<timestamp> (prevents collisions)
+          TIMESTAMP=$(date +%s)
+          git checkout -b auto-${{ github.event.inputs.task_name }}-${TIMESTAMP}
 
       - name: Implement task
         run: |
@@ -410,6 +412,68 @@ jobs:
       - name: Run automated tests
         run: |
           # Test automation logic
+```
+
+## 📋 Post-Automation Review Templates
+
+### Automation Success Review Template
+```markdown
+## 🤖 Automation Success Review
+
+**Automation Metrics:**
+- ✅ **Duration**: [X] seconds from trigger to PR creation
+- ✅ **Files Changed**: [N] files, [X] lines added  
+- ✅ **Success Rate**: 100% (no manual intervention needed)
+- ✅ **Branch**: `[branch-name]` (follows naming convention)
+
+**Human Validation Checklist:**
+- [ ] Implementation matches issue requirements exactly
+- [ ] Code follows project patterns and conventions
+- [ ] No hardcoded values or placeholder stubs remaining
+- [ ] Error handling included where appropriate
+- [ ] Integration with existing components verified
+- [ ] No regressions introduced
+
+**Quality Gates:**
+- [ ] All automated tests pass
+- [ ] CI/CD pipeline completes successfully  
+- [ ] Code review approval obtained
+- [ ] Performance impact acceptable
+
+**Post-Merge Actions:**
+- [ ] Close related micro-issue with success comment
+- [ ] Update parent issue progress tracker
+- [ ] Document lessons learned (if any)
+- [ ] Update automation templates (if improvements found)
+
+**Automation Health Score**: ✅ PASS (Ready for merge)
+
+**Notes**: [Any observations or improvements for future automations]
+```
+
+### Automation Failure Review Template
+```markdown
+## ⚠️ Automation Partial Success / Failure Review
+
+**What Worked:**
+- [List successful aspects]
+
+**What Failed:**
+- [Specific failure points]
+- [Root cause analysis]
+
+**Manual Intervention Required:**
+- [ ] [Specific fixes needed]
+- [ ] [Additional validation needed]
+
+**Lessons Learned:**
+- [Improvements for automation templates]
+- [Adjustments to micro-issue decomposition]
+
+**Next Steps:**
+- [ ] Complete manual fixes
+- [ ] Update automation templates
+- [ ] Re-test automation approach on similar task
 ```
 
 ## 📊 Monitoring Templates

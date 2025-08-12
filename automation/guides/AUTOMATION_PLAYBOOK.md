@@ -34,12 +34,33 @@ Need to automate a task?
 - How will I know it's successful? (clear validation)
 - What dependencies exist? (other files, APIs, etc.)
 - Can this be templated? (reusable pattern)
+```
 
-**Red flags** (don't automate yet):
-❌ "It depends on..."
-❌ "We need to figure out..."  
-❌ "It's different each time..."
-❌ Multiple unclear deliverables
+## ❌ When NOT to Automate - Consolidated Checklist
+
+**STOP - Do NOT automate if ANY of these apply:**
+
+🚫 **Unclear Requirements**
+- "It depends on..." or "We need to figure out..."
+- Multiple unclear deliverables
+- Requirements change frequently
+
+🚫 **Complex Dependencies** 
+- Requires changes across 5+ files simultaneously
+- Depends on external systems not in CI
+- Needs human judgment for UI/UX decisions
+
+🚫 **High Risk/Low Reward**
+- One-time task (will never repeat)
+- Critical production system (manual oversight required)
+- Learning/exploration task (human insight needed)
+
+🚫 **Technical Limitations**
+- Requires device-specific testing
+- Needs real-time user feedback
+- Cannot be validated automatically
+
+**Instead**: Break into smaller tasks, do manually, or create hybrid approach.
 ```
 
 ### Step 2: Choose Automation Method (2 minutes)
@@ -222,6 +243,8 @@ Complex Issue → Micro-Issue 1 (file A)
               → Micro-Issue 2 (file B) 
               → Micro-Issue 3 (integration)
 ```
+
+**See**: `automation/guides/AUTOMATION_MICRO_ISSUES.md` for detailed decomposition strategy and Phase 4 examples.
 
 ### Issue: Automation Creates Wrong Implementation
 **Solution**: Improve templates with more specific requirements:
