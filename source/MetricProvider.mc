@@ -1,15 +1,16 @@
 using Toybox.System as Sys;
+using Toybox.ActivityMonitor as AM;
 
 // Metric interface for Phase 1: Steps and Resting HR stubs
 class MetricProvider {
     // Returns steps count for last 24h or null if unavailable
     public static function getSteps() {
-        // Phase 1 stub: return test vector A value (8000 steps)
-        // Future: integrate with Toybox.ActivityMonitor or similar
+        // Real ActivityMonitor integration (AC1)
         try {
-            return 8000;
+            var info = AM.getInfo();
+            return info != null ? info.steps : null;
         } catch (e) {
-            Sys.println("Error fetching steps: " + e.getErrorMessage());
+            Logger.add("ERROR", ErrorCodes.METRIC_STEPS + ": " + e.getErrorMessage());
             return null;
         }
     }
