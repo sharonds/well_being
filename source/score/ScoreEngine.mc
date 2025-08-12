@@ -2,8 +2,8 @@ using Toybox.System as Sys;
 
 class ScoreEngine {
     // Feature flags (Phase 2). When false, sleep/stress are ignored even if passed to computeDynamic.
-    public static var ENABLE_SLEEP = false;
-    public static var ENABLE_STRESS = false;
+    public static var ENABLE_SLEEP = true;
+    public static var ENABLE_STRESS = true;
     // Phase 3 flag for HRV integration
     public static var ENABLE_HRV = false;
 

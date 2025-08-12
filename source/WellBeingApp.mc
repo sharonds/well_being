@@ -86,12 +86,16 @@ class MainView extends Ui.View {
         var propsAuto = Sys.getApp().getProperty("autoRefreshDate");
         var manualRunToday = (Sys.getApp().getProperty("lastRunMode") == "manual" && Sys.getApp().getProperty("lastScoreDate") == today);
         var shouldAuto = false;
+        var isLateCompute = false;
+        
         if (isShow) {
-            // Decide if we should auto-run; reuse Scheduler functions for testability
+            // Check if we should auto-refresh (7-11am window)
             shouldAuto = Scheduler.shouldAuto(today, hour, Sys.getApp().getProperty("lastScoreDate"), propsAuto, manualRunToday, lastCompute, now);
+            
+            // Check if we should do late compute (after 11am, no score today)
             if (!shouldAuto) {
-                var late = Scheduler.shouldLateCompute(today, hour, Sys.getApp().getProperty("lastScoreDate"), manualRunToday);
-                if (late) { shouldAuto = true; }
+                isLateCompute = Scheduler.shouldLateCompute(today, hour, Sys.getApp().getProperty("lastScoreDate"), manualRunToday);
+                shouldAuto = isLateCompute; // Both count as auto-triggered
             }
         }
         
@@ -108,7 +112,18 @@ class MainView extends Ui.View {
             // Fallback to phase1 if dynamic path fails (should not normally)
             score = (dyn != null) ? dyn : ScoreEngine.computePhase1(steps, restingHR);
             recommendation = RecommendationMapper.getRecommendation(score);
-            var runMode = shouldAuto ? "auto" : "manual";
+            // Determine run mode based on how computation was triggered
+            var runMode;
+            if (shouldAuto && !force) {
+                runMode = "auto";
+                Logger.add("INFO", "Auto-refresh triggered: " + (isLateCompute ? "late compute" : "morning window") + " at hour " + hour);
+            } else {
+                runMode = "manual";
+                if (force) {
+                    Logger.add("INFO", "Manual refresh triggered");
+                }
+            }
+            
             lastRunMode = runMode;
             handlePersistence(runMode);
         } else {
