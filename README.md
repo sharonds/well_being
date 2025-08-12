@@ -2,6 +2,20 @@
 
 Personal on-device readiness score experiment. See /docs/PRD.md and /execution_plan.md.
 
+## 🎯 Automation Status
+
+**GitHub Copilot Coding Agent Pipeline: ACTIVE**
+- ✅ Issue #1 created with enhanced PRD section references  
+- ✅ Repository configured with branch protection and CI/CodeQL
+- ✅ Coding Agent assigned and ready for systematic implementation
+- 🔄 Automated development now in progress - monitoring phase
+
+The project is now fully automated! The Coding Agent will:
+1. Create feature branches for each Phase 1 task
+2. Implement Connect IQ app functionality per PRD specifications  
+3. Submit PRs with CI validation and tests
+4. Progress through phases systematically
+
 ## Phase 1 Slice (Current)
 Minimal watch app computing a prototype score (steps + resting HR placeholders) with manual START key refresh throttled to 5 minutes.
 
