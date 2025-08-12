@@ -1,0 +1,19 @@
+# Build artifacts
+build/
+*.prg
+*.debug.xml
+
+# Connect IQ SDK
+connectiq-sdk/
+
+# Temporary files
+*.tmp
+tmp/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
