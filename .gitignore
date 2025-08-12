@@ -1,0 +1,80 @@
+# Connect IQ / Garmin specific
+bin/
+*.prg
+*.prg.debug.xml
+*.iq
+developer_key
+developer_key.der
+developer_key.pem
+*.der
+
+# Build outputs
+build/
+out/
+output/
+*.class
+
+# IDE specific
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# Logs and debugging
+*.log
+logs/
+debug/
+*.debug
+
+# Personal/sensitive data
+secrets/
+private/
+*.env
+.env.local
+config.local.*
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test coverage
+coverage/
+*.coverage
+.coverage.*
+
+# Dependencies (if any package managers used)
+node_modules/
+vendor/
+
+# Connect IQ SDK (should be installed separately)
+connectiq-sdk/
+sdk/
+
+# User-specific Connect IQ settings
+properties.mk
+.connectiq
+
+# Signing certificates and keys
+certificates/
+*.p12
+*.pfx
+*.jks
