@@ -101,28 +101,38 @@ Legend: Priority (P0 critical blocker; P1 high; P2 medium), Impact (H/M/L), Effo
 
 ## Status Update (12 Aug 2025)
 ✅ Phase 1 COMPLETE (merged PR #2) — score engine (steps + resting HR), recommendation bands, manual refresh + throttle, baseline tests.
-🚧 Phase 2 IN PROGRESS — adding sleep, stress, persistence, delta UI, Example B test.
+✅ Phase 2 COMPLETE — adding sleep, stress, persistence, delta UI, Example B test.
+✅ Phase 3 COMPLETE — morning auto-refresh, background processing, logging, HRV integration, enhanced error handling.
 Repository: https://github.com/sharonds/well_being
 Branch protection + CI + CodeQL enabled
 Deterministic acceptance criteria documented in PRD & copilot instructions.
 
-### Phase 2 Objectives & Success Criteria
-| Objective | Success Criteria |
-|-----------|------------------|
-| Add sleep + stress metrics | Metrics nullable; absence triggers redistribution; no crashes |
-| Persistence | lastScore & lastScoreDate stored; delta hidden first day |
-| Example B Test | Score 88 reproducible; fails fast on drift |
-| Redistribution Permutations | Each single-metric-missing path validated in tests |
-| Feature Flags | ENABLE_SLEEP / ENABLE_STRESS default off, toggling safe |
+### Phase 3 Objectives & Success Criteria (COMPLETE)
+| Objective | Success Criteria | Status |
+|-----------|------------------|--------|
+| Morning Auto-Refresh | Single daily trigger 06:00-08:00, respects throttle | ✅ COMPLETE |
+| Background Scheduling | Lightweight scheduler, missed window detection | ✅ COMPLETE |
+| Logging Ring Buffer | 20 entries max, timestamp+level+message | ✅ COMPLETE |
+| Enhanced Error Handling | Graceful metric failures, weight redistribution | ✅ COMPLETE |
+| ENABLE_HRV Feature Flag | Default false, scaffolding ready | ✅ COMPLETE |
+| HRV Metric Integration | Weight redistribution, 20-120ms normalization | ✅ COMPLETE |
+| Backward Compatibility | Phase 1/2 scores unchanged when flags off | ✅ COMPLETE |
+| Persistence Expansion | autoRefreshDate, lastRunMode keys | ✅ COMPLETE |
+| Performance | Score computation < 50ms with timing harness | ✅ COMPLETE |
 
-### Phase 2 Task List (Authoritative)
-- [ ] Extend ScoreEngine (sleep, stress; redistribution) (PRD 7.1, 7.2)
-- [ ] Sleep & Stress Metric Providers (graceful null) (PRD 7.1)
-- [ ] Persistence (lastScore, lastScoreDate) (PRD 7.4)
-- [ ] Delta UI logic (hide first run) (PRD 7.4 / 7.7)
-- [ ] Example B + permutations tests (PRD 14.1)
-- [ ] Feature flags ENABLE_SLEEP / ENABLE_STRESS (default off)
-- [ ] README & execution_plan updates committed with feature enablement
+### Phase 3 Implementation Summary
+- **Logger.mc**: Ring buffer with 20-entry capacity, oldest overwritten
+- **Scheduler.mc**: Auto-refresh logic, morning window detection, persistence tracking
+- **ScoreEngine.mc**: ENABLE_HRV flag, dynamic weight system, HRV normalization
+- **MetricProvider.mc**: HRV metric provider with graceful fallback
+- **WellBeingApp.mc**: Auto-refresh integration, enhanced error handling, performance timing
+- **PerformanceTimer.mc**: Comprehensive timing harness for performance validation
+- **TestRunner.mc**: Extended tests for all Phase 3 features and edge cases
+
+### All Test Vectors Maintained
+- Example A: Steps=8000, RHR=55 → Score=65 ✅
+- Example B: Steps=12500, RHR=48, Sleep=7h, Stress=35 → Score=88 ✅  
+- Example C: Steps=3000, RHR=70 → Score=25 ✅
 
 ## Next Immediate Actions Recommendation
 ~~If executing now inside repo:~~

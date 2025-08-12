@@ -9,7 +9,7 @@ class MetricProvider {
         try {
             return 8000;
         } catch (e) {
-            Sys.println("Error fetching steps: " + e.getErrorMessage());
+            Logger.add(Logger.ERROR, "Error fetching steps: " + e.getErrorMessage());
             return null;
         }
     }
@@ -21,7 +21,7 @@ class MetricProvider {
         try {
             return 55;
         } catch (e) {
-            Sys.println("Error fetching resting HR: " + e.getErrorMessage());
+            Logger.add(Logger.ERROR, "Error fetching resting HR: " + e.getErrorMessage());
             return null;
         }
     }
@@ -29,12 +29,38 @@ class MetricProvider {
     // Future Phase 2: sleep duration, stress, HRV
     public static function getSleepHours() {
         // Phase 2 stub: return Example B sleep when feature flag later toggled
-        return 7; // hours
+        try {
+            return 7; // hours
+        } catch (e) {
+            Logger.add(Logger.ERROR, "Error fetching sleep: " + e.getErrorMessage());
+            return null;
+        }
     }
     
     public static function getStressLevel() {
         // Phase 2 stub: return Example B stress value
-        return 35; // Garmin stress 0-100
+        try {
+            return 35; // Garmin stress 0-100
+        } catch (e) {
+            Logger.add(Logger.ERROR, "Error fetching stress: " + e.getErrorMessage());
+            return null;
+        }
+    }
+    
+    // Phase 3: HRV metric provider
+    public static function getHRV() {
+        // Phase 3 stub: return null by default (simulates absence)
+        // Future: integrate with Toybox.Health HRV APIs when available
+        try {
+            // For testing, return stub HRV value when enabled
+            if (ScoreEngine.ENABLE_HRV) {
+                return 50; // ms (example value in 20-120 range)
+            }
+            return null;
+        } catch (e) {
+            Logger.add(Logger.ERROR, "Error fetching HRV: " + e.getErrorMessage());
+            return null;
+        }
     }
     
     // Utility to check if we have minimum required metrics for Phase 1
