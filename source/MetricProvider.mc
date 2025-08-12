@@ -1,5 +1,6 @@
 using Toybox.System as Sys;
 using Toybox.ActivityMonitor as AM;
+using Toybox.UserProfile;
 
 // Metric interface for Phase 1: Steps and Resting HR stubs
 class MetricProvider {
@@ -17,12 +18,12 @@ class MetricProvider {
     
     // Returns resting heart rate in BPM or null if unavailable
     public static function getRestingHeartRate() {
-        // Phase 1 stub: return test vector A value (55 BPM)
-        // Future: integrate with Toybox.Health or similar
+        // Real UserProfile integration (AC1)
         try {
-            return 55;
+            var profile = UserProfile.getProfile();
+            return profile != null ? profile.restingHeartRate : null;
         } catch (e) {
-            Sys.println("Error fetching resting HR: " + e.getErrorMessage());
+            Logger.add("ERROR", ErrorCodes.METRIC_RHR + ": " + e.getErrorMessage());
             return null;
         }
     }
