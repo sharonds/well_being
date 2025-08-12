@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="1">
+  <iq:application id="com.example.wellbeing" type="watch-app">
+    <iq:permissions>
+      <!-- Add specific permissions as metrics integrate (e.g., health, activity) -->
+    </iq:permissions>
+    <iq:products>
+      <iq:product id="forerunner965" />
+    </iq:products>
+    <iq:languages>
+      <iq:language>en</iq:language>
+    </iq:languages>
+    <iq:version>0.0.1</iq:version>
+    <iq:entry id="WellBeingApp" />
+  </iq:application>
+</iq:manifest>
