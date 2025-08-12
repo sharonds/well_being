@@ -60,8 +60,8 @@ class MainView extends Ui.View {
         steps = MetricProvider.getSteps();
         restingHR = MetricProvider.getRestingHeartRate();
         
-        // Compute score if we have metrics
-        if (steps != null && restingHR != null) {
+        // Compute score if we have minimum required metrics
+        if (MetricProvider.hasMinimumMetrics()) {
             score = ScoreEngine.computePhase1(steps, restingHR);
             recommendation = RecommendationMapper.getRecommendation(score);
         } else {
