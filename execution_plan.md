@@ -1,8 +1,46 @@
 ## Status Update (12 Aug 2025)
-✅ Phase 1 COMPLETE (merged PR #2) — score engine (steps + resting HR), recommendation bands, manual refresh + throttle, baseline tests.
-🚧 Phase 2 IN PROGRESS — adding sleep, stress, persistence, delta UI, Example B test.
+### ✅ Phase 1: COMPLETE (PR #2)
+- Score Engine with steps + resting HR weight redistribution
+- Recommendation Mapping (3 bands)
+- Manual Refresh with 5-minute throttling
+- Basic UI display with score and metrics
+- Test harness and validation
+
+### ✅ Phase 2: COMPLETE
+- Sleep & Stress metrics added with graceful fallback
+- Persistence layer (lastScore, lastScoreDate) implemented
+- Delta display showing score change from previous day
+- Weight redistribution for missing metrics
+- Feature flags: ENABLE_SLEEP, ENABLE_STRESS (default off)
+- Example B test validated (score 88)
+
+### ✅ Phase 3: COMPLETE (PR #7)
+- Morning auto-refresh scheduler (7-11am window)
+- Structured logging system (Logger.mc)
+- HRV feature flag added (not implemented)
+- Background processing support
+- Enhanced error handling with Logger integration
+
+### ⚠️ Phase 4: PARTIALLY COMPLETE
+**Implemented (via automation):**
+- ✅ AC2: Clock abstraction with real time APIs
+- ✅ AC1 (partial): Real resting HR via UserProfile
+- ✅ AC4: ErrorCodes structure for logging
+- ✅ AC7: Settings menu for runtime toggles
+- ✅ AC8: Performance timer utility
+- ✅ AC10: Comprehensive test suite
+
+**Not Implemented:**
+- ❌ AC1 (partial): Real steps via ActivityMonitor
+- ❌ AC3: Auto-refresh trigger integration
+- ❌ AC5: Enhanced UI indicators (manual/auto)
+- ❌ AC6: 7-day history buffer
+- ❌ AC9: Full documentation updates
+
 Repository: https://github.com/sharonds/well_being
 Branch protection + CI + CodeQL enabled
+Copilot Code Review integration active
+
 # Execution Plan (Automation-Prioritized)
 
 Goal: Rapid, low-friction delivery of personal Garmin Well-Being MVP with maximum leverage from automation (planning → Coding Agent → CI gates). Scope constrained to single-user, on-device MVP defined in /docs/PRD.md.

@@ -2,55 +2,79 @@
 
 A Connect IQ watch app that provides daily readiness scoring based on wellness metrics.
 
-## Current Phase
+## Current Status
 
-**Phase 1:** ✅ Complete
-**Phase 2:** 🚧 In Progress (sleep, stress, persistence, delta display)
-
-### Phase 1 Delivered
-- Score Engine (steps + resting HR, weight redistribution)
+### ✅ Phase 1: COMPLETE (PR #2)
+- Score Engine with steps + resting HR
 - Recommendation Mapping (3 bands)
-- Metric stubs
-- Manual Refresh + 5-minute throttling
-- Minimal UI (score, metrics, recommendation)
+- Manual Refresh with 5-minute throttling
+- Basic UI display
+- Test harness and validation
 
-### Phase 2 Goals
-- Add sleep & stress metrics (graceful fallback)
-- Persistence (lastScore, lastScoreDate) & delta display
-- Example B test & redistribution permutations
+### ✅ Phase 2: COMPLETE
+- Sleep & Stress metrics added (with graceful fallback)
+- Persistence layer (lastScore, lastScoreDate)
+- Delta display showing score change
+- Weight redistribution for missing metrics
 - Feature flags: ENABLE_SLEEP, ENABLE_STRESS (default off)
 
-## 🎯 Automation Status
+### ✅ Phase 3: COMPLETE (PR #7)
+- Morning auto-refresh scheduler (7-11am)
+- Structured logging system (Logger.mc)
+- HRV feature flag (not implemented)
+- Background processing support
+- Enhanced error handling
 
-**GitHub Copilot Coding Agent Pipeline: ACTIVE**
-- ✅ Issue #1 created with enhanced PRD section references  
-- ✅ Repository configured with branch protection and CI/CodeQL
-- ✅ Coding Agent assigned and ready for systematic implementation
-- 🔄 Automated development now in progress - monitoring phase
+### ⚠️ Phase 4: PARTIALLY COMPLETE
+**Implemented:**
+- ✅ Clock abstraction with real time APIs (AC2)
+- ✅ Real resting HR via UserProfile (AC1 partial)
+- ✅ ErrorCodes structure for logging (AC4)
+- ✅ Settings menu for runtime toggles (AC7)
+- ✅ Performance timer utility (AC8)
+- ✅ Comprehensive test suite (AC10)
 
-The project is now fully automated! The Coding Agent will:
-1. Create feature branches for each Phase 1 task
-2. Implement Connect IQ app functionality per PRD specifications  
-3. Submit PRs with CI validation and tests
-4. Progress through phases systematically
+**Not Implemented:**
+- ❌ Real steps via ActivityMonitor (AC1 partial)
+- ❌ 7-day history buffer (AC6)
+- ❌ Enhanced UI indicators (AC5)
+- ❌ Full documentation updates (AC9)
 
-## Phase 1 Implementation Status
+## Development Approach
 
-✅ **Completed Features:**
-- **Score Engine**: Computes readiness score (0-100) from steps and resting heart rate
-- **Recommendation Mapping**: Maps scores to actionable guidance
-- **Metric Interface**: Stubbed data access for Phase 1 metrics
-- **Manual Refresh**: User-triggered score recomputation with 5-minute throttling
-- **Minimal UI**: Displays score, metrics, and recommendation
+### Automation Tools Available
+- **GitHub Actions**: Simple automation workflow for micro-issues
+- **Copilot Code Review**: Systematic PR review with pre-gates validation
+- **Test Suite**: Comprehensive validation via `./scripts/run_tests.sh`
+
+### Key Commands
+```bash
+# Run tests
+./scripts/run_tests.sh
+
+# Prepare for Copilot review
+./scripts/prepare-copilot-review.sh
+
+# Create micro-issue automation
+gh workflow run simple-automation.yml \
+  --field task_name=<name> \
+  --field issue_number=<number>
+```
 
 ## Architecture
 
 ### Core Components
 
-- **`WellBeingApp.mc`**: Main application and UI view
-- **`ScoreEngine.mc`**: Score calculation with weight redistribution logic
+- **`WellBeingApp.mc`**: Main application, UI view, and persistence
+- **`score/ScoreEngine.mc`**: Score calculation with weight redistribution
 - **`RecommendationMapper.mc`**: Maps scores to recommendation bands
-- **`MetricProvider.mc`**: Metric access interface (Phase 1 stubs)
+- **`MetricProvider.mc`**: Metric access with partial real API integration
+- **`clock/Clock.mc`**: Real time/date abstraction
+- **`Scheduler.mc`**: Auto-refresh scheduling logic
+- **`Logger.mc`**: Structured logging system
+- **`ErrorCodes.mc`**: Error code constants
+- **`SettingsMenu.mc`**: Runtime feature toggles
+- **`PerformanceTimer.mc`**: Performance measurement utility
 
 ### Score Calculation (Phase 1)
 
