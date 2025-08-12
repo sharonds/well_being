@@ -2,28 +2,10 @@
 
 A Connect IQ watch app that provides daily readiness scoring based on wellness metrics.
 
-## 🤖 Automation-First Development
-
-This project showcases **end-to-end development automation**. Most features are implemented via GitHub Actions workflows rather than manual coding.
-
-### Quick Start Automation (5 minutes)
-```bash
-# Your first automation
-gh workflow run simple-automation.yml \
-  --field task_name=error-codes \
-  --field issue_number=NEW_ISSUE_NUMBER
-
-# Monitor progress  
-gh run list --limit 3
-gh pr list --limit 2
-```
-
-**📚 Complete guides**: `automation/guides/` | Quick access: `automation/README.md`
-
 ## Current Phase
 
-**Phase 1-3:** ✅ Complete (Basic score engine → Full feature MVP)  
-**Phase 4:** 🤖 **Automated** - Production integration via micro-issue automation
+**Phase 1:** ✅ Complete
+**Phase 2:** 🚧 In Progress (sleep, stress, persistence, delta display)
 
 ### Phase 1 Delivered
 - Score Engine (steps + resting HR, weight redistribution)

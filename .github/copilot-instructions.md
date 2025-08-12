@@ -77,19 +77,7 @@ This is a Garmin Connect IQ watch app for personal well-being tracking. It compu
 - Real Garmin health metrics integration (graceful fallbacks)
 - UI enhancements (delta display, auto/manual indicators)
 
-### Hybrid Automation Approach (Current)
-- **GitHub Actions First**: Use `.github/workflows/phase4-automation.yml` for complex multi-task issues
-- **Manual Refinement**: Human validation and completion of automated implementations  
-- **Real API Integration**: Workflows handle actual Garmin SDK integration vs stubs
-- **Structured Output**: Automated commits follow conventional format with AC references
-
-### GitHub Actions Workflow Guidelines
-- **Trigger Method**: Manual dispatch or "automate-phase-4" issue comments
-- **Implementation Scope**: Core repetitive tasks (Clock, metrics, persistence)
-- **Human Validation Required**: UI decisions, performance testing, edge cases
-- **Branch Pattern**: `{phase}-automated-implementation` for workflow branches
-
-### Legacy Copilot Agent Guidelines (Enterprise Only)
+### Agent Execution Guidelines (Complex Issues)
 - **Multi-task Issues**: Follow Implementation Plan priority order exactly
 - **Acceptance Criteria**: Each AC must be individually validated and confirmed
 - **Performance Requirements**: Validate timing with test harness, not assumptions
