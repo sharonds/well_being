@@ -11,7 +11,7 @@ class Scheduler {
     //   lastComputeMs (number) -- last compute timestamp ms
     //   nowMs (number) -- current time ms
     // Constraints:
-    //   - Auto only within 06:00-08:00 inclusive window (hour 6 or 7)
+    //   - Auto only within 07:00-11:00 inclusive window (hour 7-10)
     //   - Only once per day (autoRefreshDate != currentDate)
     //   - Skip if manual run already produced today's score
     //   - Respect 5 min throttle (now-lastComputeMs > 300000)
@@ -19,7 +19,7 @@ class Scheduler {
         if (currentDate == null) { return false; }
         if (manualRunToday) { return false; }
         if (autoRefreshDate != null && autoRefreshDate == currentDate) { return false; }
-        if (currentHour < 6 || currentHour >= 8) { return false; } // hours 6-7
+        if (currentHour < 7 || currentHour >= 11) { return false; } // hours 7-10
         if ((nowMs - lastComputeMs) <= 300000) { return false; }
         return true;
     }
@@ -29,7 +29,7 @@ class Scheduler {
         if (currentDate == null) { return false; }
         if (manualRunToday) { return false; }
         if (lastScoreDate != null && lastScoreDate == currentDate) { return false; }
-        if (currentHour >= 8) { return true; }
+        if (currentHour >= 11) { return true; }
         return false;
     }
 }
