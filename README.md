@@ -59,7 +59,7 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 - ✅ **Authentication configured** (InfluxDB token + Grafana login)
 - ✅ **Query Library**: 15+ wellness queries documented in `dashboard/queries/`
 
-### 🏃 Dashboard Phase 2: Garmin Integration (COMPLETE ✅)
+### 🏃 Dashboard Phase 2: Garmin Integration (COMPLETE + HARDENED ✅)
 **Real data from Garmin Connect with enterprise-grade integrity:**
 - ✅ **Garmin Connect API integration** (`fetch_garmin_data.py`)
 - ✅ **4 core metrics fetched**: Steps, Resting HR, Sleep, Stress
@@ -72,6 +72,11 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 - ✅ **MFA Support**: Interactive authentication for 2FA-enabled accounts
 - ✅ **Real Data Tested**: 7 days fetched, 78.6% completeness, successfully ingested
 - ✅ **Manual Dashboard Created**: 6 Flux queries operational in Grafana
+
+**Phase 2 Hardening (Per ChatGPT-5 Review):**
+- ✅ **Duplicate Guard**: Idempotent ingestion preventing duplicate (date, schema) pairs
+- ✅ **Privacy Scanner**: Validates no raw health metrics in telemetry (43 violations caught)
+- ✅ **Boundary Band Tests**: Locked transitions at scores 39/40 and 69/70
 
 **Setup**: Add credentials to `.env`: `GARMIN_EMAIL` and `GARMIN_PASSWORD`
 **Test**: `python3 dashboard/scripts/test_garmin_mfa.py` (for MFA accounts)
@@ -179,11 +184,12 @@ monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w
 - ✅ Phase 0: Foundation & Security (COMPLETE)
 - ✅ Phase 1: Minimum Insight Panels (COMPLETE - Live at http://localhost:3001)
 - ✅ Phase 2: Garmin Integration (COMPLETE - Real data flowing)
-- 🚀 Phase 3: Operational Reliability (NEXT - See PHASE3_PLANNING.md)
-  - Auto-refresh with 90% success rate
-  - Idempotence & duplicate prevention
-  - Battery-aware safe mode
-  - Enhanced drift detection
+- 🚀 Phase 3: Operational Reliability (IN PROGRESS - See PHASE3_PLANNING.md)
+  - ✅ Idempotence & duplicate prevention (AC2 COMPLETE)
+  - ✅ Privacy enforcement tests (AC6 partial)
+  - ⏳ Auto-refresh with 90% success rate (AC1)
+  - ⏳ Battery-aware safe mode (AC4)
+  - ⏳ Enhanced drift detection (AC5)
 
 ## Development
 

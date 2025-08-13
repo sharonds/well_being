@@ -61,7 +61,7 @@ Branch protection + CI + CodeQL enabled
 - Security hardening (credentials, .env)
 - 15+ wellness query library
 
-### ✅ Dashboard Phase 2: Garmin Integration COMPLETE
+### ✅ Dashboard Phase 2: Garmin Integration COMPLETE + HARDENED
 **Implemented with enterprise-grade hardening:**
 - Garmin Connect API integration (4 core metrics)
 - Privacy-first telemetry (no raw metrics exported)
@@ -73,29 +73,36 @@ Branch protection + CI + CodeQL enabled
 - CI/CD Phase Guard workflow
 - Observable data completeness tracking
 
+**Phase 2 Hardening (ChatGPT-5 Review Implementation):**
+- ✅ Duplicate ingestion guard with idempotence tests
+- ✅ Privacy scanner detecting raw health metrics
+- ✅ Boundary band tests locking score transitions
+- ✅ 8 tests for duplicate guard, 9 for privacy scan, 8 for band boundaries
+
 **Key Achievements:**
 - Real data from Garmin devices
 - Production-ready with ChatGPT-5 review hardening
 - Zero scope creep (deferred items remain deferred)
 - Privacy preserved (telemetry contains no raw values)
 
-### 🚀 Dashboard Phase 3: Operational Reliability (NEXT)
+### 🚀 Dashboard Phase 3: Operational Reliability (IN PROGRESS)
 **Focus: Hardening & Trust (See PHASE3_PLANNING.md)**
-- Auto-refresh with 90% success rate over 14 days (AC1)
-- Idempotence & duplicate prevention (AC2)
-- Data integrity <1% failures (AC3)
-- Battery-aware safe mode (AC4)
-- Formula drift detection & gating (AC5)
-- Privacy guard tests (AC6)
-- Completeness delta monitoring (AC7)
-- Self-healing persistence (AC8)
+- ⏳ Auto-refresh with 90% success rate over 14 days (AC1)
+- ✅ Idempotence & duplicate prevention (AC2 - COMPLETE)
+- ⏳ Data integrity <1% failures (AC3)
+- ⏳ Battery-aware safe mode (AC4)
+- ⏳ Formula drift detection & gating (AC5)
+- ✅ Privacy guard tests (AC6 - COMPLETE)
+- ⏳ Completeness delta monitoring (AC7)
+- ⏳ Self-healing persistence (AC8)
 
 **Current Status:**
-- ✅ Phase 2 complete with real Garmin data
+- ✅ Phase 2 complete with real Garmin data + hardening
 - ✅ MFA authentication working
 - ✅ 7 days of real data fetched & ingested
 - ✅ Manual dashboard with 6 working queries
-- 🎯 Ready to begin Phase 3 hardening
+- ✅ Duplicate guard and privacy scanner implemented
+- 🎯 2 of 8 Phase 3 ACs complete
 
 ## Automation Framework Status
 

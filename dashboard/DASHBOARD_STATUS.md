@@ -1,6 +1,6 @@
 # Dashboard Status Report
 
-## Current State: Phase 2 COMPLETE ✅
+## Current State: Phase 2 COMPLETE + Phase 3 IN PROGRESS 🚀
 
 ### Infrastructure
 - **Grafana**: Running at http://localhost:3001 (admin: wellness_admin / WellBeing2025Test!)
@@ -41,28 +41,38 @@
 - ✅ Type conflict (score field) - Cast to int before ingestion
 - ✅ Bar chart field error - Fixed query to provide string field
 
-## Phase 3 Planning: Operational Reliability
+## Phase 3 Progress: Operational Reliability
+
+### Completed (2 of 8 ACs)
+1. **✅ Idempotence & Duplicate Prevention** (AC2)
+   - Implemented `duplicate_guard.py` with full test suite
+   - Prevents duplicate (date, schema_version) pairs
+   - 8 comprehensive tests passing
+
+2. **✅ Privacy Guard Tests** (AC6)
+   - Implemented `privacy_scan.py` with regex validation
+   - Detects any raw health metrics in telemetry
+   - Successfully catches 43 violations in current data
+   - 9 comprehensive tests passing
+
+### Additional Phase 2 Hardening Completed
+- **✅ Boundary Band Tests**: Locked score transitions at 39/40 and 69/70
+- **✅ Test Coverage**: 25 new tests across 3 modules
 
 ### Next Priorities (from PHASE3_PLANNING.md)
-1. **Idempotence & Duplicate Prevention** (AC2)
-   - Prevent duplicate scores for same date
-   - Add check_duplicate() function
-
-2. **Auto-Refresh KPI Monitoring** (AC1)
+1. **Auto-Refresh KPI Monitoring** (AC1)
+   - Add auto_run flag to telemetry
    - Track 14-day success rate ≥90%
-   - Add telemetry for auto_run flag
+   - Create KPI dashboard panel
+
+2. **Formula Drift Detection** (AC5)
+   - Implement hash tracking for formulas
+   - Require [FORMULA-CHANGE] commit tag
+   - Add CI validation
 
 3. **Battery-Aware Safe Mode** (AC4)
    - Skip fetch when battery <15%
    - Log SKIP_BATTERY events
-
-4. **Enhanced Drift Detection** (AC5)
-   - Hash formula changes
-   - Require [FORMULA-INTENT] tag for legitimate changes
-
-5. **Privacy Guard Tests** (AC6)
-   - Red-team test to ensure no raw metrics leak
-   - Automated privacy validation
 
 ### Commands Reference
 
