@@ -13,8 +13,9 @@ Local analytics extension for readiness score explainability (trend, contributio
 
 ## Quick Run (Manual)
 ```bash
-python3 dashboard/score/engine.py          # Show example scores
-python3 dashboard/tests/test_vectors.py    # Run parity assertions
+# From project root:
+PYTHONPATH=/Users/sharonsciammas/well_being python3 dashboard/score/engine.py          # Show example scores
+PYTHONPATH=/Users/sharonsciammas/well_being python3 dashboard/tests/test_vectors.py    # Run parity assertions
 ```
 
 Expected output:
@@ -52,7 +53,6 @@ Run schema + integrity validation on sample records:
 PYTHONPATH=. python3 dashboard/scripts/validate_daily_records.py dashboard/tests/sample_daily_records.jsonl
 ```
 Expected: `VALIDATION PASSED`
-
 ## Notes
 - Do not store personal raw exports in repo; use `private/` directory.
 - Formula version pinned via WB_FORMULA_VERSION (.env).
