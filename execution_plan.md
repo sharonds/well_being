@@ -59,8 +59,9 @@ Copilot Code Review integration active
 | Synthetic 30-day export | ✅ | JSONL validates successfully (PR #27) |
 | **InfluxDB ingestion** | ✅ | **Complete pipeline with 3 measurements (PR #29)** |
 | **4 baseline panels** | ✅ | **Score/Contrib/Quality/Errors + provisioning (PR #30)** |
-| **Docker infrastructure** | ✅ | **Complete stack with port isolation (3001/8087)** |
+| **Docker infrastructure** | ✅ | **Complete stack with port isolation (3001/8087) (PR #32)** |
 | **Security hardening** | ✅ | **9/9 checklist items complete (PR #31)** |
+| **Validation evidence** | ✅ | **Pipeline validation + AC3 proof (PR #33)** |
 | One-command setup | ✅ | `./start-dashboard.sh` with health checks |
 | **Real data ingestion** | ✅ | **Ready - all security gates passed** |
 
