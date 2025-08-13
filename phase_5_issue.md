@@ -46,6 +46,7 @@ Date: 2025-08-14
 - JSON Schema: validate envelope + payload; version-gated parsing (lightweight validator)
 - E2E: Playwright harness validates import + IndexedDB
  - Security: local dev servers hardened against path traversal and stack trace reflection (CodeQL green)
+ - Note: Security hardening applies to local tooling only (serve script + e2e harness); no runtime app changes
 
 6) Config + feature flags
 - dashboard/config.py additions: thresholds (anomaly, sleep variance), windows (trend), flags (ENABLE_PLAN_ENGINE, ENABLE_INSIGHT_CARD, ENABLE_COACH_CHIP)
@@ -95,3 +96,4 @@ Date: 2025-08-14
 - docs/PRD.md (Section 7.2 formulas)
 - .github/workflows/daily-ops.yml
 - phase_3_2_issue.md, phase_3_3_issue.md, phase_4_issue.md
+ - CHANGELOG.md: entry for web import + security hardening
