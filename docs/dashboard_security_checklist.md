@@ -48,7 +48,7 @@ Purpose: Must be 100% complete BEFORE ingesting any personal Garmin data.
 
 ## 9. Final Approval
 - [x] All boxes checked
-- [x] Commit hash recorded here: `COMMIT=` (to be updated after commit)
+- [x] Commit hash recorded here: `COMMIT=1a88c9b`
 - [x] Date of approval recorded: `DATE=2025-08-13`
 
 ---
