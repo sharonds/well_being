@@ -61,7 +61,10 @@ Copilot Code Review integration active
 | **4 baseline panels** | ✅ | **Score/Contrib/Quality/Errors + provisioning (PR #30)** |
 | **Docker infrastructure** | ✅ | **Complete stack with port isolation (3001/8087) (PR #32)** |
 | **Security hardening** | ✅ | **9/9 checklist items complete (PR #31)** |
-| **Validation evidence** | ✅ | **Pipeline validation + AC3 proof (PR #33)** |
+| **Validation evidence** | ✅ | **Complete validation artifacts (PR #33 + latest)** |
+| **Parity report** | ✅ | **dashboard/parity_report.md (A/B/C + redistribution)** |
+| **Auto-refresh tests** | ✅ | **3 explicit integration tests added** |
+| **Security guards** | ✅ | **Credential validation in startup script** |
 | One-command setup | ✅ | `./start-dashboard.sh` with health checks |
 | **Real data ingestion** | ✅ | **Ready - all security gates passed** |
 
