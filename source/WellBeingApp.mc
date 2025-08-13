@@ -22,6 +22,7 @@ class MainView extends Ui.View {
     var delta = null; // current score - previous
     var previousScore = null; // yesterday's score for display
     var lastRunMode = "manual"; // 'auto' or 'manual' for indicator
+    var lastPacket = null; // cached JSON string for QR
 
     function initialize() {
         View.initialize();
@@ -69,9 +70,17 @@ class MainView extends Ui.View {
     }
 
     function onKey(evt) {
-        if (evt.getType() == Ui.KEY_PRESS && evt.getKey() == Ui.KEY_START) {
-            computeIfAllowed(false);
-            return true;
+        if (evt.getType() == Ui.KEY_PRESS) {
+            var key = evt.getKey();
+            if (key == Ui.KEY_START) {
+                computeIfAllowed(false);
+                return true;
+            }
+            // Quick toggle: UP shows QR if packet cached
+            if (key == Ui.KEY_UP) {
+                showQrIfAvailable();
+                return true;
+            }
         }
         return false;
     }
@@ -132,6 +141,7 @@ class MainView extends Ui.View {
         }
         
         lastCompute = now;
+    buildPacketIfPossible();
         Ui.requestUpdate();
     }
     
@@ -156,6 +166,27 @@ class MainView extends Ui.View {
         } catch(e) {
             Logger.add("ERROR", ErrorCodes.PERSIST + ": " + e.getErrorMessage());
         }
+    }
+
+    function buildPacketIfPossible() {
+        try {
+            if (score == null) { return; }
+            var today = Clock.today();
+            var band = recommendation; // map already computed
+            var pkt = InsightPacket.buildPlanPacket(today, score, band, delta);
+            if (pkt != null) { lastPacket = pkt; }
+        } catch(e) {
+            // ignore
+        }
+    }
+
+    function showQrIfAvailable() {
+        if (lastPacket == null) {
+            // Best effort: try building on-demand
+            buildPacketIfPossible();
+        }
+        var json = (lastPacket == null) ? null : lastPacket;
+        Ui.pushView(new QRView(json), Ui.SLIDE_LEFT);
     }
 }
 

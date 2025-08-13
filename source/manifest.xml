@@ -13,4 +13,11 @@
     <iq:version>0.0.1</iq:version>
     <iq:entry id="WellBeingApp" />
   </iq:application>
+    <iq:resources>
+    </iq:resources>
+    <iq:source>
+      <iq:include src="InsightPacket.mc" />
+      <iq:include src="QRView.mc" />
+      <iq:include src="JsonView.mc" />
+    </iq:source>
 </iq:manifest>
