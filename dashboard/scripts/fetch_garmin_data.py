@@ -16,7 +16,8 @@ dashboard_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, dashboard_path)
 from scripts.phase3.auto_run_tracker import add_auto_run_flag
 from scripts.phase3.battery_safeguard import should_skip_battery
-from score.engine import compute_score, MetricInputs, ScoreFlags
+from score.engine import compute_score, MetricInputs, ScoreFlags, map_score_to_band
+from utils.file_utils import atomic_append_jsonl
 
 # Set up logging
 logging.basicConfig(
@@ -152,14 +153,8 @@ class GarminWellnessFetcher:
         return result.score
     
     def get_band(self, score: int) -> str:
-        """Get wellness band based on score using engine logic."""
-        # Use the engine's band mapping for consistency
-        if 70 <= score <= 100:
-            return "Go for it"
-        elif 40 <= score <= 69:
-            return "Maintain"
-        else:  # 0 <= score <= 39
-            return "Take it easy"
+        """Get wellness band based on score using centralized mapping."""
+        return map_score_to_band(score)
     
     def fetch_date_range(self, start_date: datetime, end_date: datetime) -> List[Dict]:
         """Fetch data for a date range."""
@@ -192,12 +187,18 @@ def save_telemetry(records: list, output_dir: str = "dashboard/data"):
     from garmin_integrity import DataIntegrity
     
     telemetry_file = f"{output_dir}/telemetry_{datetime.now().strftime('%Y%m%d')}.jsonl"
-    with open(telemetry_file, 'w') as f:
-        for record in records:
-            telemetry = DataIntegrity.create_telemetry_record(record, auto_run=False)
-            f.write(json.dumps(telemetry) + '\n')
     
-    logger.info(f"Telemetry saved to {telemetry_file}")
+    # Create telemetry records
+    telemetry_records = []
+    for record in records:
+        telemetry = DataIntegrity.create_telemetry_record(record, auto_run=False)
+        telemetry_records.append(telemetry)
+    
+    # Use atomic write for telemetry
+    if atomic_append_jsonl(telemetry_records, telemetry_file):
+        logger.info(f"Telemetry saved to {telemetry_file}")
+    else:
+        logger.error(f"Failed to save telemetry to {telemetry_file}")
 
 def main():
     """Main function to fetch Garmin data."""
@@ -248,13 +249,16 @@ def main():
         logger.error("No data fetched")
         sys.exit(1)
     
-    # Save to file
+    # Save to file atomically
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
-    with open(args.output, 'w') as f:
-        for record in records:
-            f.write(json.dumps(record) + '\n')
     
-    logger.info(f"Successfully saved {len(records)} records to {args.output}")
+    # Use atomic write to prevent corruption
+    from utils.file_utils import atomic_write_jsonl
+    if atomic_write_jsonl(records, args.output):
+        logger.info(f"Successfully saved {len(records)} records to {args.output}")
+    else:
+        logger.error(f"Failed to save records to {args.output}")
+        sys.exit(1)
     
     # Save telemetry (privacy-preserving)
     save_telemetry(records)

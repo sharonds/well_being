@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Tuple
 dashboard_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, dashboard_path)
 from config import Config
+from score.engine import map_score_to_band
 
 logger = logging.getLogger(__name__)
 
@@ -91,13 +92,8 @@ def validate_record_integrity(record: Dict) -> Tuple[bool, List[str]]:
     return len(errors) == 0, errors
 
 def get_expected_band(score: float) -> str:
-    """Get expected band for a given score."""
-    if score < 40:
-        return "Take it easy"
-    elif score < 70:
-        return "Maintain"
-    else:
-        return "Go for it"
+    """Get expected band for a given score using centralized mapping."""
+    return map_score_to_band(int(score))
 
 def calculate_integrity_failure_rate(records: List[Dict], days: Optional[int] = None) -> Dict:
     """Calculate integrity failure rate over N days.
@@ -150,6 +146,7 @@ def calculate_integrity_failure_rate(records: List[Dict], days: Optional[int] = 
         result['remediation'] = remediation_report
         
         logger.info(f"Generated remediation report with {len(remediation_report['error_categories'])} error types")
+        logger.info(f"Actionable operations: {len(remediation_report['actionable_ops'])} recommended")
     else:
         logger.info(f"Integrity check OK: {failure_rate:.2f}% failure rate "
                    f"({failed_records}/{len(recent_records)} records)")
@@ -263,12 +260,16 @@ def generate_remediation_report(records: List[Dict], all_errors: List[str]) -> D
     from collections import Counter
     import re
     
-    # Categorize errors by type
+    # Categorize errors by type (expanded per ChatGPT-5 recommendation)
     error_categories = {
         'missing_fields': 0,
         'score_range': 0, 
         'band_mismatch': 0,
         'date_format': 0,
+        'auto_run_invalid': 0,
+        'metrics_mask_invalid': 0,
+        'schema_version_invalid': 0,
+        'future_fields_ignored': 0,
         'other': 0
     }
     
@@ -298,19 +299,60 @@ def generate_remediation_report(records: List[Dict], all_errors: List[str]) -> D
             error_categories['date_format'] += 1
             if 'date_format' not in error_samples:
                 error_samples['date_format'] = error_msg
+        elif 'auto_run' in error_msg.lower() and ('invalid' in error_msg.lower() or 'must be' in error_msg.lower()):
+            error_categories['auto_run_invalid'] += 1
+            if 'auto_run_invalid' not in error_samples:
+                error_samples['auto_run_invalid'] = error_msg
+        elif 'metrics_mask' in error_msg.lower() and ('out of bounds' in error_msg.lower() or 'must be' in error_msg.lower()):
+            error_categories['metrics_mask_invalid'] += 1
+            if 'metrics_mask_invalid' not in error_samples:
+                error_samples['metrics_mask_invalid'] = error_msg
+        elif 'schema_version' in error_msg.lower() and 'invalid' in error_msg.lower():
+            error_categories['schema_version_invalid'] += 1
+            if 'schema_version_invalid' not in error_samples:
+                error_samples['schema_version_invalid'] = error_msg
+        elif 'unknown field' in error_msg.lower() or 'ignored' in error_msg.lower():
+            error_categories['future_fields_ignored'] += 1
+            if 'future_fields_ignored' not in error_samples:
+                error_samples['future_fields_ignored'] = error_msg
         else:
             error_categories['other'] += 1
             if 'other' not in error_samples:
                 error_samples['other'] = error_msg
     
-    # Generate recommendations  
+    # Generate actionable recommendations (expanded per ChatGPT-5)
     recommendations = []
+    actionable_ops = []
+    
     if error_categories['band_mismatch'] > 0:
         recommendations.append("Band mismatch errors detected - check scoring formula consistency")
+        actionable_ops.append("Run: PYTHONPATH=. python3 dashboard/scripts/duplicate_guard.py validate")
+        
     if error_categories['score_range'] > 0:
         recommendations.append("Score range errors - validate input data quality")
+        actionable_ops.append("Check source data for outlier scores >100 or <0")
+        
     if error_categories['missing_fields'] > 0:
         recommendations.append("Missing field errors - check data ingestion pipeline")
+        actionable_ops.append("Review data transformation in fetch_garmin_data.py")
+        
+    if error_categories['auto_run_invalid'] > 0:
+        recommendations.append("auto_run field validation errors - check automation flags")
+        actionable_ops.append("Verify auto_run values are 0 or 1 only")
+        
+    if error_categories['metrics_mask_invalid'] > 0:
+        recommendations.append("metrics_mask validation errors - check bit field ranges")
+        actionable_ops.append("Ensure metrics_mask values are 0-15 (4-bit field)")
+        
+    if error_categories['schema_version_invalid'] > 0:
+        recommendations.append("schema_version format errors - normalize version strings")
+        actionable_ops.append("Run schema version normalization utility")
+        
+    if sum(error_categories.values()) > 0:
+        actionable_ops.extend([
+            "Consider quarantining failing records: from scripts.phase3.integrity_monitor import quarantine_failing_records",
+            "For systematic issues: re-run data fetch with validated parameters"
+        ])
     
     return {
         'timestamp': datetime.now().isoformat(),
@@ -318,6 +360,7 @@ def generate_remediation_report(records: List[Dict], all_errors: List[str]) -> D
         'error_categories': error_categories,
         'error_samples': error_samples,
         'recommendations': recommendations,
+        'actionable_ops': actionable_ops,
         'total_errors': len(all_errors),
         'affected_dates_count': len(failing_dates)
     }

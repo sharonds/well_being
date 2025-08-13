@@ -52,6 +52,33 @@ BAND_MAP = [
     (70, 100, "Go for it"),
 ]
 
+def map_score_to_band(score: int) -> str:
+    """
+    Map a wellness score to its corresponding band.
+    
+    Centralized band mapping to eliminate duplicate logic across modules.
+    
+    Args:
+        score: Wellness score (0-100)
+        
+    Returns:
+        Band name string
+        
+    Examples:
+        map_score_to_band(35) -> "Take it easy"
+        map_score_to_band(55) -> "Maintain" 
+        map_score_to_band(75) -> "Go for it"
+    """
+    for lo, hi, band_name in BAND_MAP:
+        if lo <= score <= hi:
+            return band_name
+    
+    # Fallback for out-of-range scores
+    if score < 0:
+        return "Take it easy"
+    else:  # score > 100
+        return "Go for it"
+
 
 def _round_score(value: float) -> int:
     return int(floor(value + 0.5))
@@ -138,11 +165,7 @@ def compute_score(inputs: MetricInputs, flags: ScoreFlags | None = None) -> Scor
     score_raw = score_acc * 100.0
     score_int = _round_score(score_raw)
 
-    band = "Unknown"
-    for lo, hi, name in BAND_MAP:
-        if lo <= score_int <= hi:
-            band = name
-            break
+    band = map_score_to_band(score_int)
 
     missing = []
     if inputs.steps is None: missing.append("steps")

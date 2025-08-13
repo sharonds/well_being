@@ -7,9 +7,16 @@ Detect corrupted history files, quarantine them, and rebuild from telemetry.
 import json
 import logging
 import shutil
+import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+# Add dashboard path for utils import  
+dashboard_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, dashboard_path)
+from utils.file_utils import atomic_write_jsonl
 
 logger = logging.getLogger(__name__)
 
@@ -143,12 +150,15 @@ def rebuild_from_telemetry(output_path: str, telemetry_files: List[str] = None) 
     # Write rebuilt history
     try:
         Path(output_path).parent.mkdir(exist_ok=True)
-        with open(output_path, 'w') as f:
-            for record in sorted_records:
-                f.write(json.dumps(record) + '\n')
         
-        logger.info(f"RECOVERED_HISTORY: Rebuilt {len(sorted_records)} records to {output_path}")
-        return True
+        # Use atomic write to prevent corruption during rebuild
+        success = atomic_write_jsonl(sorted_records, output_path)
+        if success:
+            logger.info(f"RECOVERED_HISTORY: Rebuilt {len(sorted_records)} records to {output_path}")
+            return True
+        else:
+            logger.error(f"Failed to atomically write rebuilt history to {output_path}")
+            return False
         
     except Exception as e:
         logger.error(f"Failed to write rebuilt history: {e}")

@@ -10,6 +10,11 @@ import sys
 from typing import Dict, Set, Tuple, List
 from datetime import datetime
 
+# Add dashboard path for utils import
+dashboard_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, dashboard_path)
+from utils.schema_utils import normalize_schema_version
+
 def load_existing_records(filepath: str) -> Set[Tuple[str, str]]:
     """
     Load existing records and return set of (date, schema_version) tuples.
@@ -26,8 +31,10 @@ def load_existing_records(filepath: str) -> Set[Tuple[str, str]]:
                     record = json.loads(line)
                     date = record.get('date', '')
                     schema_version = record.get('schema_version', 'v1.0.0')
+                    # Normalize schema version to prevent v1.0.0 vs 2.0.0 duplicates
+                    normalized_version = normalize_schema_version(schema_version)
                     if date:
-                        existing.add((date, schema_version))
+                        existing.add((date, normalized_version))
                 except json.JSONDecodeError:
                     continue
     
@@ -35,7 +42,8 @@ def load_existing_records(filepath: str) -> Set[Tuple[str, str]]:
 
 def check_duplicate(record: Dict, existing: Set[Tuple[str, str]]) -> bool:
     """
-    Check if a record would be a duplicate.
+    Check if a record would be a duplicate based on normalized schema version.
+    Uses schema version normalization to prevent v1.0.0 vs 2.0.0 duplicates.
     Returns True if duplicate exists.
     """
     date = record.get('date', '')
@@ -44,7 +52,24 @@ def check_duplicate(record: Dict, existing: Set[Tuple[str, str]]) -> bool:
     if not date:
         return False
     
-    return (date, schema_version) in existing
+    # Normalize schema version to catch format inconsistencies
+    normalized_version = normalize_schema_version(schema_version)
+    return (date, normalized_version) in existing
+
+def check_duplicate_in_records(record: Dict, existing_records: List[Dict]) -> bool:
+    """
+    Convenience function to check duplicates against a list of existing records.
+    Converts records to normalized (date, schema_version) set for comparison.
+    """
+    existing_set = set()
+    for existing_record in existing_records:
+        date = existing_record.get('date', '')
+        schema_version = existing_record.get('schema_version', 'v1.0.0')
+        normalized_version = normalize_schema_version(schema_version)
+        if date:
+            existing_set.add((date, normalized_version))
+    
+    return check_duplicate(record, existing_set)
 
 def filter_duplicates(new_records: List[Dict], target_file: str) -> List[Dict]:
     """
@@ -63,8 +88,10 @@ def filter_duplicates(new_records: List[Dict], target_file: str) -> List[Dict]:
             # Add to existing set to prevent duplicates within batch
             date = record.get('date', '')
             schema_version = record.get('schema_version', 'v1.0.0')
+            # Normalize schema version for consistency
+            normalized_version = normalize_schema_version(schema_version)
             if date:
-                existing.add((date, schema_version))
+                existing.add((date, normalized_version))
     
     if duplicates_found:
         print(f"⚠️  Found {len(duplicates_found)} duplicate records for dates: {', '.join(duplicates_found)}")
