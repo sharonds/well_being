@@ -64,7 +64,7 @@ run_test "Schema validation" \
 echo "7️⃣ Privacy Compliance"
 echo "---------------------"
 run_test "Privacy scan on telemetry" \
-    "python3 dashboard/scripts/privacy_scan.py dashboard/data/garmin_wellness.jsonl --telemetry-mode"
+    "python3 dashboard/scripts/privacy_scan.py dashboard/data/garmin_wellness.jsonl"
 
 echo "============================================="
 echo "📊 RESULTS SUMMARY"
