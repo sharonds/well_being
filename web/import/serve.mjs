@@ -24,22 +24,36 @@ function startServer(rootDir) {
   return new Promise((resolve, reject) => {
     const server = http.createServer(async (req, res) => {
       try {
-        const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
-        const safePath = path.normalize(urlPath).replace(/^\/+/, '');
-        const filePath = path.join(rootDir, safePath || 'web/import/index.html');
+        const rawUrlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+        // Normalize to POSIX-style and strip leading slashes to avoid absolute paths
+        const normalized = path.posix.normalize(rawUrlPath).replace(/^\/+/, '');
+        const requested = normalized || 'web/import/index.html';
+        const candidate = path.resolve(rootDir, requested);
+        // Ensure the resolved path stays within rootDir
+        const rel = path.relative(rootDir, candidate);
+        if (rel.startsWith('..') || path.isAbsolute(rel)) {
+          res.statusCode = 403;
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          res.end('Forbidden');
+          return;
+        }
+        const filePath = candidate;
         let stat;
-        try { stat = await fs.stat(filePath); } catch { res.statusCode = 404; res.end('Not found'); return; }
+        try { stat = await fs.stat(filePath); } catch { res.statusCode = 404; res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('Not found'); return; }
         let toServe = filePath;
         if (stat.isDirectory()) {
           const indexPath = path.join(filePath, 'index.html');
-          try { await fs.access(indexPath); toServe = indexPath; } catch { res.statusCode = 404; res.end('Not found'); return; }
+          try { await fs.access(indexPath); toServe = indexPath; } catch { res.statusCode = 404; res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('Not found'); return; }
         }
         const buf = await fs.readFile(toServe);
         res.setHeader('Content-Type', contentType(toServe));
         res.end(buf);
       } catch (e) {
+        // Log details server-side, but do not expose exception text to clients
+        console.error('Server error:', e);
         res.statusCode = 500;
-        res.end(String(e));
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.end('Internal Server Error');
       }
     });
     server.listen(0, '127.0.0.1', () => {

@@ -24,29 +24,33 @@ function startServer(rootDir) {
   return new Promise((resolve, reject) => {
     const server = http.createServer(async (req, res) => {
       try {
-        const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
-        const safePath = path.normalize(urlPath).replace(/^\/+/, '');
-        const filePath = path.join(rootDir, safePath || 'index.html');
-        let stat;
-        try {
-          stat = await fs.stat(filePath);
-        } catch {
-          res.statusCode = 404;
-          res.end('Not found');
+        const rawUrlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+        const normalized = path.posix.normalize(rawUrlPath).replace(/^\/+/, '');
+        const requested = normalized || 'index.html';
+        const candidate = path.resolve(rootDir, requested);
+        const rel = path.relative(rootDir, candidate);
+        if (rel.startsWith('..') || path.isAbsolute(rel)) {
+          res.statusCode = 403;
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+          res.end('Forbidden');
           return;
         }
+        const filePath = candidate;
+        let stat;
+        try { stat = await fs.stat(filePath); } catch { res.statusCode = 404; res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('Not found'); return; }
         let toServe = filePath;
         if (stat.isDirectory()) {
           const indexPath = path.join(filePath, 'index.html');
-          await fs.access(indexPath);
-          toServe = indexPath;
+          try { await fs.access(indexPath); toServe = indexPath; } catch { res.statusCode = 404; res.setHeader('Content-Type', 'text/plain; charset=utf-8'); res.end('Not found'); return; }
         }
         const buf = await fs.readFile(toServe);
         res.setHeader('Content-Type', contentType(toServe));
         res.end(buf);
       } catch (e) {
+        console.error('E2E server error:', e);
         res.statusCode = 500;
-        res.end(String(e));
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.end('Internal Server Error');
       }
     });
     server.listen(0, '127.0.0.1', () => {
