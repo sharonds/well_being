@@ -5,8 +5,8 @@ Status: Proposed
 Date: 2025-08-13
 
 ## Goals
-- Deliver Phase A of user stories quickly and safely: a single “Today” plan with Tier-1 chips and minimal feedback loop.
-- Establish a deterministic PlanEngine with guardrails, persistence, and observability.
+- Deliver Phase 5A with local compute and simple sharing: a single “Today” plan with minimal feedback.
+- Establish PlanEngine with guardrails/persistence and expose insights to a web app via QR/paste (no MFA, no companion app).
 
 ## Scope (Phase A only)
 - Deterministic plan generation at morning run.
@@ -16,6 +16,7 @@ Date: 2025-08-13
 
 ## Out of scope (later phases)
 - Start timer/logging, Focus screen, Meditation nudge confidence model, Settings UI expansion.
+- iOS companion app, server ingestion, Garmin Health API.
 
 ## Deliverables
 1) Module: PlanEngine
@@ -32,19 +33,25 @@ Date: 2025-08-13
 - Window: 07:00 local ± configurable; DST-aware
 - Behavior: generate plan if none exists; skip otherwise; log
 
-4) UI wiring (minimal)
+4) UI wiring (minimal on-device)
 - Plan card: single line using copy kit
 - Tier-1 chips: checkable toggles
 - Buttons: Done, Snooze
 - Energy modal: 1–10 quick input (phase A minimal)
 
-5) Config + feature flags
+5) Web sharing (QR + paste, zero-backend)
+- Watch: render QR for insight_packet_v1; fallback to copy/paste JSON
+- Web app stub: Import page with “Scan QR” and “Paste JSON”
+- Storage: IndexedDB helper with idempotent upsert by (date,type)
+- JSON Schema: validate envelope + payload; version-gated parsing
+
+6) Config + feature flags
 - dashboard/config.py additions: thresholds (anomaly, sleep variance), windows (trend), flags (ENABLE_PLAN_ENGINE, ENABLE_INSIGHT_CARD, ENABLE_COACH_CHIP)
 
-6) Observability
+7) Observability
 - Counters appended to ops metrics: plan_generated, plan_skipped_missing_data, adherence_logged
 
-7) Privacy
+8) Privacy
 - Extend privacy scan to include new files; ensure no raw metrics are exported (only deltas/flags)
 
 ## Thresholds (defaults)
@@ -56,16 +63,18 @@ Date: 2025-08-13
 ## Tests
 - Unit tests for PlanEngine boundaries: anomaly precedence, rhrΔ=+7, sleep=6.5h, band consistency (no hard on anomaly), missing metrics fallback.
 - Persistence tests: idempotent write, recompute flag behavior, timezone/DST basic guard.
+- Web import tests (unit/e2e-lite): JSON schema validation, IndexedDB upsert, QR payload decode happy path.
 
 ## Tasks
-- [ ] Add PlanEngine module and tests
-- [ ] Add persistence (plan_daily.jsonl, adherence_daily.jsonl) using atomic utilities
-- [ ] Morning job wiring with existing scheduler
-- [ ] UI: render Plan card, chips, Done/Snooze, energy modal
-- [ ] Update dashboard/config.py with thresholds and flags
-- [ ] Extend metrics exporter counters
-- [ ] Update privacy scan to include new files
-- [ ] Docs: README (Phase A usage), update CHANGELOG
+- [ ] PlanEngine: finalize module and tests (done) and keep thresholds centralized
+- [ ] Persistence: plan_daily.jsonl, adherence_daily.jsonl via atomic utilities (done)
+- [ ] Morning job: generate plan before metrics; idempotent; ENABLE_PLAN_ENGINE guard (done)
+- [ ] On-device UI: Plan card, chips, Done/Snooze, energy modal (minimal)
+- [ ] Web import stub: QR scan + paste input page; JSON schema; IndexedDB helper
+- [ ] Sample packet: add docs/specs/insight_packet_v1.sample.json for dev/testing
+- [ ] Metrics/alerts: plan metrics in Prometheus; soft alert if no plan today (done)
+- [ ] Privacy scan: include new files and packet schema; verify green
+- [ ] Docs: Link ADR-0005 and web import spec from README and phase_5_issue; update CHANGELOG
 
 ## Acceptance criteria
 - Plan emits ≤3 actions, renders <300ms from cached data
@@ -75,6 +84,8 @@ Date: 2025-08-13
 
 ## References
 - PHASE_5_USER_STORIES_REVIEW.md
+- docs/adr/ADR-0005-local-insight-packet-qr.md
+- docs/specs/QR-Insight-Packet-and-Web-Import.md
 - docs/PRD.md (Section 7.2 formulas)
 - .github/workflows/daily-ops.yml
 - phase_3_2_issue.md, phase_3_3_issue.md, phase_4_issue.md

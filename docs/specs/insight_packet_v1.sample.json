@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "type": "plan_daily",
+  "device_id": "abc123",
+  "created_at": "2025-08-13T07:30:00Z",
+  "payload": {
+    "date": "2025-08-13",
+    "band": "Maintain",
+    "score": 65,
+    "delta": -4,
+    "plan": { "type": "easy", "minutes_range": "30-40", "addons": ["core10", "breath10"] },
+    "why": ["sleep −1.2h", "RHR +6"],
+    "schema_version": "v1.0.0"
+  }
+}
