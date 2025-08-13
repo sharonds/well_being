@@ -1,8 +1,8 @@
 # Phase 5 – Issue Doc: Plan Engine and Phase A Delivery
 
 Owner: @sharonds
-Status: Proposed
-Date: 2025-08-13
+Status: In Progress
+Date: 2025-08-14
 
 ## Goals
 - Deliver Phase 5A with local compute and simple sharing: a single “Today” plan with minimal feedback.
@@ -45,6 +45,7 @@ Date: 2025-08-13
 - Storage: IndexedDB helper with idempotent upsert by (date,type), last-write-wins by created_at
 - JSON Schema: validate envelope + payload; version-gated parsing (lightweight validator)
 - E2E: Playwright harness validates import + IndexedDB
+ - Security: local dev servers hardened against path traversal and stack trace reflection (CodeQL green)
 
 6) Config + feature flags
 - dashboard/config.py additions: thresholds (anomaly, sleep variance), windows (trend), flags (ENABLE_PLAN_ENGINE, ENABLE_INSIGHT_CARD, ENABLE_COACH_CHIP)
@@ -67,21 +68,25 @@ Date: 2025-08-13
 - Web import tests (unit/e2e-lite): JSON schema validation, IndexedDB upsert, QR payload decode happy path.
 
 ## Tasks
-- [ ] PlanEngine: finalize module and tests (done) and keep thresholds centralized
-- [ ] Persistence: plan_daily.jsonl, adherence_daily.jsonl via atomic utilities (done)
-- [ ] Morning job: generate plan before metrics; idempotent; ENABLE_PLAN_ENGINE guard (done)
+- [x] PlanEngine: finalize module and tests and keep thresholds centralized
+- [x] Persistence: plan_daily.jsonl, adherence_daily.jsonl via atomic utilities
+- [x] Morning job: generate plan before metrics; idempotent; ENABLE_PLAN_ENGINE guard
 - [ ] On-device UI: Plan card, chips, Done/Snooze, energy modal (minimal)
 - [x] Web import: QR scan + paste page; JSON schema; IndexedDB helper; file:// fallback
 - [x] Sample packet: add docs/specs/insight_packet_v1.sample.json for dev/testing
-- [ ] Metrics/alerts: plan metrics in Prometheus; soft alert if no plan today (done)
+- [x] Metrics/alerts: plan metrics in Prometheus; soft alert if no plan today
 - [ ] Privacy scan: include new files and packet schema; verify green
 - [ ] Docs: Link ADR-0005 and web import spec from README and phase_5_issue; update CHANGELOG
+- [x] CI: Add e2e workflow to run web import tests on push/PR
+- [x] Security: Harden local static servers; resolve CodeQL alerts
+- [ ] Watch: Replace placeholder QR with real encoder; keep JSON fallback
+- [ ] Docs: README “How-to” with scan/paste steps and screenshots
 
 ## Acceptance criteria
 - Plan emits ≤3 actions, renders <300ms from cached data
 - Never emits hard plan on anomaly days
 - One plan per local day; recompute requires explicit flag
-- Privacy scan green, ops workflows continue to pass
+- Privacy scan green, ops workflows continue to pass; code scanning shows no new alerts
 
 ## References
 - PHASE_5_USER_STORIES_REVIEW.md
