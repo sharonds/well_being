@@ -57,9 +57,11 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 - ✅ **Docker infrastructure RUNNING (Grafana:3001, InfluxDB:8087)**
 - ✅ **Security hardening complete (9/9 checklist items)**
 - ✅ **Authentication configured** (InfluxDB token + Grafana login)
+- ✅ **Query Library**: 15+ wellness queries documented in `dashboard/queries/`
 
 **LIVE NOW**: http://localhost:3001 (wellness_admin / wellbeing_secure_password)
 **Status**: ✅ Successfully displaying 30 days of wellness data
+**Setup**: Use manual queries from `dashboard/queries/wellness_queries.md` for best results
 
 ## Development Approach
 

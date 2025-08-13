@@ -1,0 +1,125 @@
+{
+  "uid": "wellness-simple",
+  "title": "Simple Wellness Dashboard",
+  "tags": ["wellness"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5m",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "title": "Current Score",
+      "type": "gauge",
+      "targets": [
+        {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"wb_score\")\n  |> filter(fn: (r) => r._field == \"score\")\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 50},
+              {"color": "green", "value": 70}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "title": "7-Day Average",
+      "type": "stat",
+      "targets": [
+        {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"wb_score\")\n  |> filter(fn: (r) => r._field == \"score\")\n  |> mean()",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 50},
+              {"color": "green", "value": 70}
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background"
+      }
+    },
+    {
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 3,
+      "title": "Component Contributions",
+      "type": "piechart",
+      "targets": [
+        {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"wb_contrib\")\n  |> filter(fn: (r) => r._field == \"contribution\")\n  |> group(columns: [\"metric\"])\n  |> mean()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 8},
+      "id": 4,
+      "title": "Score Timeline",
+      "type": "timeseries",
+      "targets": [
+        {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"wb_score\")\n  |> filter(fn: (r) => r._field == \"score\")",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "pointSize": 5
+          }
+        }
+      }
+    },
+    {
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+      "id": 5,
+      "title": "Recent Scores Table",
+      "type": "table",
+      "targets": [
+        {
+          "query": "from(bucket: \"metrics\")\n  |> range(start: -7d)\n  |> filter(fn: (r) => r._measurement == \"wb_score\")\n  |> filter(fn: (r) => r._field == \"score\")\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 10)",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "weekStart": ""
+}
