@@ -39,6 +39,12 @@ Sum(contrib) ~= score/100 (after inverse rounding). Will enforce with validator 
 3. InfluxDB ingestion scripts for wb_score, wb_contrib, wb_quality.
 4. Provision baseline Grafana panels via JSON.
 
+## Validation Script
+Run schema + integrity validation on sample records:
+```bash
+PYTHONPATH=. python3 dashboard/scripts/validate_daily_records.py dashboard/tests/sample_daily_records.jsonl
+```
+Expected: `VALIDATION PASSED`
 ## Notes
 - Do not store personal raw exports in repo; use `private/` directory.
 - Formula version pinned via WB_FORMULA_VERSION (.env).
