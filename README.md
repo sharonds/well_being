@@ -160,3 +160,13 @@ Wearable (Phases 1–4) nearing completion (see status above). Dashboard Phases:
 
 ## Disclaimer
 Not medical advice. Personal experimentation only.
+
+## Dashboard Security (Phase 0 Gate)
+Before ingesting personal Garmin data into the planned local dashboard:
+- Complete `docs/dashboard_security_checklist.md` (all boxes checked).
+- Copy `.env.example` to `.env`, fill secrets, set permissions: `chmod 600 .env`.
+- Change ALL default Grafana & InfluxDB credentials.
+- Keep raw exports only under `private/` (git-ignored) – never commit.
+- (Optional) Install pre-commit guard: `ln -s ../../scripts/precommit-guard.sh .git/hooks/pre-commit`.
+
+Personal-use only; unofficial API access may break or violate ToS – proceed conservatively.
