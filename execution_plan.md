@@ -79,13 +79,23 @@ Branch protection + CI + CodeQL enabled
 - Zero scope creep (deferred items remain deferred)
 - Privacy preserved (telemetry contains no raw values)
 
-### 🚀 Dashboard Phase 3: Automated Pipeline (PENDING)
-Next steps:
-- Automated daily fetch via GitHub Actions
-- Data quality monitoring
-- Alert system for anomalies
-- Enhanced visualizations
-- Mobile-responsive dashboard
+### 🚀 Dashboard Phase 3: Operational Reliability (NEXT)
+**Focus: Hardening & Trust (See PHASE3_PLANNING.md)**
+- Auto-refresh with 90% success rate over 14 days (AC1)
+- Idempotence & duplicate prevention (AC2)
+- Data integrity <1% failures (AC3)
+- Battery-aware safe mode (AC4)
+- Formula drift detection & gating (AC5)
+- Privacy guard tests (AC6)
+- Completeness delta monitoring (AC7)
+- Self-healing persistence (AC8)
+
+**Current Status:**
+- ✅ Phase 2 complete with real Garmin data
+- ✅ MFA authentication working
+- ✅ 7 days of real data fetched & ingested
+- ✅ Manual dashboard with 6 working queries
+- 🎯 Ready to begin Phase 3 hardening
 
 ## Automation Framework Status
 
@@ -266,17 +276,23 @@ Deterministic acceptance criteria documented in PRD & copilot instructions.
 
 ### Access Instructions:
 1. Dashboard: http://localhost:3001
-2. Login: wellness_admin / wellbeing_secure_password
-3. View: Wellness Simple Dashboard
+2. Login: wellness_admin / WellBeing2025Test!
+3. View: Wellness Dashboard (manually created with 6 panels)
 
 ### Data Commands:
 ```bash
-# Validate data
-PYTHONPATH=. python3 dashboard/scripts/validate_daily_records.py [file]
+# Test Garmin connection (with MFA)
+python3 dashboard/scripts/test_garmin_mfa.py
+
+# Fetch real Garmin data
+./dashboard/scripts/fetch_with_mfa.sh 7
+
+# Validate data integrity
+python3 dashboard/scripts/garmin_integrity.py dashboard/data/garmin_wellness.jsonl
 
 # Ingest to InfluxDB
-PYTHONPATH=. python3 dashboard/scripts/ingest_influxdb.py [file]
+python3 dashboard/scripts/ingest_influxdb.py dashboard/data/garmin_wellness.jsonl
 
-# Manual data entry
+# Manual data entry (backup option)
 python3 dashboard/scripts/manual_entry.py
 ```

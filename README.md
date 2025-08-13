@@ -69,11 +69,15 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 - ✅ **Comprehensive test suite**: Edge cases, migrations, privacy checks
 - ✅ **CI/CD Phase Guard**: Prevents regression and scope creep
 - ✅ **Observable completeness**: Track data quality without exposing values
+- ✅ **MFA Support**: Interactive authentication for 2FA-enabled accounts
+- ✅ **Real Data Tested**: 7 days fetched, 78.6% completeness, successfully ingested
+- ✅ **Manual Dashboard Created**: 6 Flux queries operational in Grafana
 
 **Setup**: Add credentials to `.env`: `GARMIN_EMAIL` and `GARMIN_PASSWORD`
-**Test**: `python3 dashboard/scripts/test_garmin_connection.py`
-**Fetch**: `python3 dashboard/scripts/fetch_garmin_data.py`
-**Status**: Production-ready with hardened integrity checks
+**Test**: `python3 dashboard/scripts/test_garmin_mfa.py` (for MFA accounts)
+**Fetch**: `./dashboard/scripts/fetch_with_mfa.sh` (interactive)
+**Ingest**: `python3 dashboard/scripts/ingest_influxdb.py dashboard/data/garmin_wellness.jsonl`
+**Status**: Production-ready with live data visualization
 
 ## Development Approach
 
@@ -166,10 +170,20 @@ monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w
 | B | 12,500 | 48 | 88 | Go for it | (Pending Phase 2 enable) |
 
 ## Roadmap
-Wearable (Phases 1–4) nearing completion (see status above). Dashboard Phases:
-- Phase 0: Foundation & Security (IN PROGRESS)
-- Phase 1: Minimum Insight Panels (pending Influx writer)
-- Phase 2+: Explainability & Simulation (deferred)
+
+### Wearable (COMPLETE ✅)
+- Phases 1-4: All 10 acceptance criteria complete
+- Production-ready with real health data integration
+
+### Dashboard Progress
+- ✅ Phase 0: Foundation & Security (COMPLETE)
+- ✅ Phase 1: Minimum Insight Panels (COMPLETE - Live at http://localhost:3001)
+- ✅ Phase 2: Garmin Integration (COMPLETE - Real data flowing)
+- 🚀 Phase 3: Operational Reliability (NEXT - See PHASE3_PLANNING.md)
+  - Auto-refresh with 90% success rate
+  - Idempotence & duplicate prevention
+  - Battery-aware safe mode
+  - Enhanced drift detection
 
 ## Development
 
