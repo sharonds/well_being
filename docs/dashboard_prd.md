@@ -87,12 +87,12 @@ Deferred (Phase 2+): Delta Explanation panel (per-day delta breakdown), Rolling 
 - Validate metrics arrive (spot-check steps, resting HR)
 - Document credential handling (.env)
 
-### Phase 1 (Minimum Insight) – Target First Review
+### Phase 1 (Minimum Insight) – COMPLETE ✅
 - [x] Implement Python scoring + verify vectors
 - [x] Generate synthetic historical scores + contributions
-- [ ] Ingest into InfluxDB (measurement: `wb_score`, `wb_contrib`)
-- [ ] Build 4 baseline panels (JSON provisioned)
-- [ ] Add completeness & error code aggregation
+- [x] **Ingest into InfluxDB (measurements: `wb_score`, `wb_contrib`, `wb_quality`)**
+- [x] **Build 4 baseline panels (JSON provisioned + automated setup)**
+- [x] **Add completeness & error code aggregation (wb_quality measurement)**
 
 ### Phase 2 (Explainability & Quality)
 - Delta decomposition (per metric delta day-over-day)

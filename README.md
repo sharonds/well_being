@@ -46,14 +46,17 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 **Remaining (10%):**
 - ❌ Auto-refresh integration (AC3) - Scheduler wiring needed
 
-### 📊 Dashboard Extension (Parallel Track)
-Phase 0 (Security & Parity) Progress:
-- ✅ Security scaffold (.env.example, precommit guard, checklist)
+### 📊 Dashboard Extension (Phase 1 COMPLETE ✅)
+**Full dashboard foundation with visualization ready:**
+- ✅ Security scaffold (.env.example, precommit guard, checklist) 
 - ✅ Parity Python score engine (Examples A:65, B:88, C:25)
 - ✅ JSON Schema + validator (daily_record.schema.json + validate script)
 - ✅ Synthetic historical export (30-day JSONL) + integrity validation
-- 🚧 Next: InfluxDB writer (wb_score, wb_contrib, wb_quality) then panel provisioning
+- ✅ **InfluxDB ingestion pipeline (wb_score, wb_contrib, wb_quality)**
+- ✅ **4 baseline Grafana panels (Score Timeline, Contributions, Completeness, Errors)**
+- ✅ **One-command setup automation** (complete pipeline)
 
+**Ready**: http://localhost:3000/d/wellbeing/wellbeing-dashboard  
 Gate: No real personal data ingestion until dashboard_security_checklist fully checked.
 
 ## Development Approach
