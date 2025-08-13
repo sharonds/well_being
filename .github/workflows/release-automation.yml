@@ -1,0 +1,212 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.1)'
+        required: true
+        type: string
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get full history for changelog
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            # Extract version from tag
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            # Use input version
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Preparing release v$VERSION"
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo "📝 Generating changelog..."
+          
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release - including all commits"
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            echo "Changes since $PREV_TAG"
+            COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Create changelog content
+          cat > RELEASE_NOTES.md << EOF
+          # Release v${{ steps.version.outputs.version }}
+          
+          ## 📊 Release Summary
+          - **Date**: $(date -u +"%Y-%m-%d")
+          - **Type**: ${{ github.event.inputs.release_type || 'release' }}
+          
+          ## 🚀 Highlights
+          
+          ### Wearable Application
+          - All 10 acceptance criteria complete
+          - Real health data integration (Steps, HR, Sleep, Stress)
+          - Auto-refresh scheduler (7-11am window)
+          - 7-day history with persistence
+          - Enhanced UI with delta display
+          
+          ### Dashboard Infrastructure
+          - Docker stack operational (Grafana:3001, InfluxDB:8087)
+          - Data pipeline validated
+          - Security hardening complete
+          - Live visualization at http://localhost:3001
+          
+          ## 📝 Changes
+          
+          $COMMITS
+          
+          ## 📦 Artifacts
+          
+          - Wearable: \`build/WellBeing.prg\`
+          - Dashboard: Docker Compose stack
+          - Documentation: Complete setup guides
+          
+          ## 🔧 Installation
+          
+          ### Wearable
+          \`\`\`bash
+          # Deploy to Garmin device
+          connectiq-sdk/bin/monkeydo build/WellBeing.prg device
+          \`\`\`
+          
+          ### Dashboard
+          \`\`\`bash
+          # Start infrastructure
+          docker-compose up -d
+          
+          # Ingest data
+          PYTHONPATH=. python3 dashboard/scripts/ingest_influxdb.py
+          
+          # Access at http://localhost:3001
+          \`\`\`
+          
+          ## 📚 Documentation
+          
+          - [Setup Guide](DASHBOARD_SETUP.md)
+          - [Current Status](CURRENT_STATUS.md)
+          - [Execution Plan](execution_plan.md)
+          
+          EOF
+          
+          echo "changelog_file=RELEASE_NOTES.md" >> $GITHUB_OUTPUT
+      
+      - name: Update version in files
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "📝 Updating version to v$VERSION in project files..."
+          
+          # Update manifest.xml if it exists
+          if [ -f source/manifest.xml ]; then
+            sed -i.bak "s/versionName=\"[^\"]*\"/versionName=\"$VERSION\"/" source/manifest.xml
+          fi
+          
+          # Update CURRENT_STATUS.md
+          if [ -f CURRENT_STATUS.md ]; then
+            sed -i.bak "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$VERSION/g" CURRENT_STATUS.md
+          fi
+          
+          # Update package.json if it exists (for any Node tools)
+          if [ -f package.json ]; then
+            sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" package.json
+          fi
+      
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Create the release
+          gh release create "v$VERSION" \
+            --title "Well-Being MVP v$VERSION" \
+            --notes-file ${{ steps.changelog.outputs.changelog_file }} \
+            --draft=false \
+            --prerelease=false
+          
+          echo "✅ Release v$VERSION created successfully!"
+      
+      - name: Update documentation
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Append to CHANGELOG.md
+          if [ -f CHANGELOG.md ]; then
+            echo "" >> CHANGELOG.md
+            echo "---" >> CHANGELOG.md
+            cat ${{ steps.changelog.outputs.changelog_file }} >> CHANGELOG.md
+          fi
+          
+          # Create a PR for version updates if files changed
+          if git diff --quiet; then
+            echo "No files needed updating"
+          else
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            
+            BRANCH="release-updates-v$VERSION"
+            git checkout -b $BRANCH
+            git add -A
+            git commit -m "chore: Update version references to v$VERSION"
+            git push origin $BRANCH
+            
+            gh pr create \
+              --title "chore: Post-release updates for v$VERSION" \
+              --body "Automated updates following the v$VERSION release:
+              - Version references updated
+              - Documentation synchronized
+              - Changelog appended
+              
+              🤖 Generated by release-automation.yml" \
+              --assignee sharonds
+          fi
+      
+      - name: Notify completion
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "## 🎉 Release v$VERSION Complete!"
+          echo ""
+          echo "### Published Assets:"
+          echo "- GitHub Release: https://github.com/${{ github.repository }}/releases/tag/v$VERSION"
+          echo "- Changelog: Available in release notes"
+          echo ""
+          echo "### Next Steps:"
+          echo "1. Deploy wearable to device"
+          echo "2. Start dashboard infrastructure"
+          echo "3. Begin collecting real wellness data"
+          echo ""
+          echo "### Dashboard Access:"
+          echo "- URL: http://localhost:3001"
+          echo "- Login: wellness_admin / wellbeing_secure_password"

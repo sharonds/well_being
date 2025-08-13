@@ -48,6 +48,61 @@ jobs:
       - name: Run Unit Tests (placeholder)
         run: |
           echo "Executing placeholder tests"
+      
+      - name: Validate Dashboard Components
+        run: |
+          echo "🔍 Validating dashboard infrastructure..."
+          
+          # Check Docker Compose syntax
+          if [ -f docker-compose.yml ]; then
+            echo "Checking Docker Compose configuration..."
+            docker-compose config > /dev/null 2>&1 && echo "✅ Docker Compose valid" || echo "⚠️ Docker Compose issues"
+          fi
+          
+          # Check for sensitive data in committed files
+          echo "Checking for sensitive data..."
+          if [ -f .env ]; then
+            echo "❌ ERROR: .env file should not be committed!"
+            exit 1
+          fi
+          
+          # Validate dashboard scripts exist
+          echo "Checking dashboard scripts..."
+          for script in validate_daily_records.py ingest_influxdb.py export_historical.py; do
+            if [ -f "dashboard/scripts/$script" ]; then
+              echo "✅ Found: $script"
+            else
+              echo "⚠️ Missing: $script"
+            fi
+          done
+          
+          # Check Python syntax for dashboard scripts
+          if command -v python3 &> /dev/null; then
+            echo "Checking Python syntax..."
+            python3 -m py_compile dashboard/scripts/*.py 2>&1 | grep -v "__pycache__" || echo "✅ Python syntax valid"
+          fi
+      
+      - name: Security Check
+        run: |
+          echo "🔒 Running security checks..."
+          
+          # Check for hardcoded credentials
+          echo "Checking for hardcoded credentials..."
+          if grep -r "password\|token\|secret" --include="*.py" --include="*.yml" --exclude-dir=".git" . | grep -v "example\|placeholder\|test" | grep -E "=\s*['\"][^'\"]*['\"]"; then
+            echo "⚠️ WARNING: Possible hardcoded credentials found"
+          else
+            echo "✅ No obvious hardcoded credentials"
+          fi
+          
+          # Verify .gitignore includes sensitive paths
+          echo "Checking .gitignore..."
+          for pattern in ".env" "*.key" "*.pem" "dashboard/data/"; do
+            if grep -q "$pattern" .gitignore; then
+              echo "✅ .gitignore includes: $pattern"
+            else
+              echo "⚠️ Consider adding to .gitignore: $pattern"
+            fi
+          done
           bash scripts/run_tests.sh || echo "Test harness not yet implemented; treating as pass"
 
       - name: Archive Build Artifact

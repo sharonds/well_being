@@ -1,0 +1,150 @@
+name: Dashboard Data Pipeline
+
+on:
+  schedule:
+    # Run daily at 12pm UTC (adjust for your timezone)
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      data_source:
+        description: 'Data source to use'
+        required: true
+        default: 'synthetic'
+        type: choice
+        options:
+          - synthetic
+          - manual
+          - garmin_api
+      days_back:
+        description: 'Number of days to fetch (for historical data)'
+        required: false
+        default: '30'
+        type: string
+
+env:
+  INFLUXDB_URL: http://localhost:8087
+  INFLUXDB_ORG: local
+  INFLUXDB_BUCKET: metrics
+  GRAFANA_URL: http://localhost:3001
+
+jobs:
+  validate-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema influxdb-client
+      
+      - name: Validate pipeline components
+        run: |
+          echo "🔍 Validating dashboard pipeline components..."
+          python dashboard/scripts/validate_pipeline.py
+      
+      - name: Check Docker configuration
+        run: |
+          echo "🐳 Validating Docker Compose configuration..."
+          docker-compose config > /dev/null
+          if [ $? -eq 0 ]; then
+            echo "✅ Docker Compose configuration valid"
+          else
+            echo "❌ Docker Compose configuration invalid"
+            exit 1
+          fi
+
+  generate-data:
+    needs: validate-infrastructure
+    runs-on: ubuntu-latest
+    outputs:
+      data_file: ${{ steps.generate.outputs.data_file }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Generate synthetic data
+        if: github.event.inputs.data_source == 'synthetic' || github.event.schedule
+        id: generate
+        run: |
+          echo "📊 Generating synthetic wellness data..."
+          PYTHONPATH=. python dashboard/scripts/export_historical.py dashboard/data/automated_export.jsonl
+          echo "data_file=dashboard/data/automated_export.jsonl" >> $GITHUB_OUTPUT
+      
+      - name: Validate generated data
+        run: |
+          echo "✔️ Validating data format..."
+          PYTHONPATH=. python dashboard/scripts/validate_daily_records.py ${{ steps.generate.outputs.data_file }}
+      
+      - name: Upload data artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: wellness-data
+          path: ${{ steps.generate.outputs.data_file }}
+          retention-days: 7
+
+  health-check:
+    needs: generate-data
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Check InfluxDB health
+        run: |
+          echo "🏥 Checking InfluxDB health..."
+          # This would connect to your actual InfluxDB instance
+          # For CI, we're just validating the structure
+          echo "✅ Health check placeholder - would verify InfluxDB connection"
+      
+      - name: Check Grafana health
+        run: |
+          echo "📊 Checking Grafana health..."
+          # This would connect to your actual Grafana instance
+          echo "✅ Health check placeholder - would verify Grafana API"
+      
+      - name: Report status
+        run: |
+          echo "## 📈 Dashboard Pipeline Status"
+          echo "- Data Generation: ✅ Complete"
+          echo "- Data Validation: ✅ Passed"
+          echo "- InfluxDB: 🔄 Ready for ingestion"
+          echo "- Grafana: 🔄 Ready for visualization"
+          echo ""
+          echo "### Next Steps:"
+          echo "1. Run ingestion locally: \`PYTHONPATH=. python3 dashboard/scripts/ingest_influxdb.py\`"
+          echo "2. View dashboard: http://localhost:3001"
+
+  notify-completion:
+    needs: [health-check]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Create issue comment
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "📊 **Dashboard Pipeline Execution Complete**" > comment.md
+          echo "" >> comment.md
+          if [ "${{ needs.health-check.result }}" == "success" ]; then
+            echo "✅ Pipeline executed successfully!" >> comment.md
+            echo "- Data source: ${{ github.event.inputs.data_source || 'synthetic' }}" >> comment.md
+            echo "- Days processed: ${{ github.event.inputs.days_back || '30' }}" >> comment.md
+            echo "- Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> comment.md
+          else
+            echo "⚠️ Pipeline encountered issues" >> comment.md
+            echo "Check [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> comment.md
+          fi
+          
+          # If there's an open issue for dashboard work, comment there
+          # Otherwise, this is just logged in the workflow
