@@ -50,13 +50,14 @@ Repository: https://github.com/sharonds/well_being
 Branch protection + CI + CodeQL enabled  
 Copilot Code Review integration active
 
-### Dashboard Parallel Track (Foundation)
+### Dashboard Parallel Track (Foundation) 
 | Item | Status | Notes |
 |------|--------|-------|
-| Security scaffold (.env.example, precommit guard) | ✅ | Phase 0 gate assets committed |
-| Parity engine (Python) | ✅ | Matches A=65,B=88,C=25 |
-| Schema + validator | ✅ | Integrity rule enforced (<0.01 contrib delta) |
-| Synthetic 30-day export | ✅ | JSONL validates successfully |
+| Security scaffold (.env.example, precommit guard) | ✅ | Phase 0 gate assets committed (PR #26) |
+| Parity engine (Python) | ✅ | Matches A=65,B=88,C=25 (PR #26) |
+| Schema + validator | ✅ | Integrity rule enforced (<0.01 contrib delta) (PR #25) |
+| Synthetic 30-day export | ✅ | JSONL validates successfully (PR #27) |
+| Record builder + export pipeline | ✅ | Complete synthetic historical generation (PR #27) |
 | Influx writer | ⏳ | Next micro-issue |
 | Core panels (4) | ⏳ | Awaiting writer |
 | Real data ingestion | 🔒 | Blocked until checklist complete |
