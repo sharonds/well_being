@@ -15,8 +15,8 @@ from typing import Dict, List, Optional
 # Add dashboard to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from config import Config
-from scripts.ops.metrics_exporter import MetricsCollector
+from dashboard.config import Config
+from dashboard.scripts.ops.metrics_exporter import MetricsCollector
 
 
 class AlertManager:
@@ -119,6 +119,52 @@ class AlertManager:
             }
         return None
     
+    def check_daily_plan_status(self, metrics: Dict) -> Optional[Dict]:
+        """Check if daily plan was generated (soft warning)."""
+        # Only check if Plan Engine is enabled
+        if not Config.ENABLE_PLAN_ENGINE:
+            return None
+            
+        plan_engine = metrics.get('plan_engine', {})
+        
+        # Check if we have today's plan
+        from datetime import date
+        import os
+        import json
+        
+        plan_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            'data', 'plan_daily.jsonl'
+        )
+        
+        has_todays_plan = False
+        if os.path.exists(plan_file):
+            today = date.today().isoformat()
+            with open(plan_file, 'r') as f:
+                for line in f:
+                    try:
+                        plan = json.loads(line.strip())
+                        if plan.get('date') == today:
+                            has_todays_plan = True
+                            break
+                    except json.JSONDecodeError:
+                        continue
+        
+        if not has_todays_plan:
+            return {
+                'type': 'missing_daily_plan',
+                'severity': 'info',  # Soft warning
+                'title': '📋 No Daily Plan Generated',
+                'message': f"Today's training plan has not been generated yet",
+                'details': {
+                    'date': date.today().isoformat(),
+                    'plans_generated_total': plan_engine.get('plans_generated', 0),
+                    'enabled': Config.ENABLE_PLAN_ENGINE
+                },
+                'runbook': 'Run: python3 dashboard/scripts/plan_engine.py'
+            }
+        return None
+    
     def generate_alerts(self, metrics: Dict) -> List[Dict]:
         """Generate alerts based on metrics."""
         alerts = []
@@ -137,6 +183,11 @@ class AlertManager:
             alerts.append(alert)
         
         alert = self.check_recent_remediations(metrics)
+        if alert:
+            alerts.append(alert)
+        
+        # Check Phase 5 plan status (soft warning)
+        alert = self.check_daily_plan_status(metrics)
         if alert:
             alerts.append(alert)
         

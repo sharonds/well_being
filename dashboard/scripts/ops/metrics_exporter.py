@@ -344,6 +344,24 @@ class MetricsCollector:
             lines.append(f'# TYPE wellness_ingestion_days_behind gauge')
             lines.append(f'wellness_ingestion_days_behind {metrics["ingestion"].get("days_behind", -1)}')
             
+            # Add Phase 5 plan metrics if enabled
+            if Config.ENABLE_PLAN_ENGINE and 'plan_engine' in metrics:
+                lines.append(f'# HELP wellness_plans_generated_total Total plans generated')
+                lines.append(f'# TYPE wellness_plans_generated_total counter')
+                lines.append(f'wellness_plans_generated_total {metrics["plan_engine"]["plans_generated"]}')
+                
+                lines.append(f'# HELP wellness_adherence_logged_total Total adherence records logged')
+                lines.append(f'# TYPE wellness_adherence_logged_total counter')
+                lines.append(f'wellness_adherence_logged_total {metrics["plan_engine"]["adherence_logged"]}')
+                
+                lines.append(f'# HELP wellness_adherence_avg_pct Average adherence percentage')
+                lines.append(f'# TYPE wellness_adherence_avg_pct gauge')
+                lines.append(f'wellness_adherence_avg_pct {metrics["plan_engine"]["avg_adherence_pct"]}')
+                
+                lines.append(f'# HELP wellness_energy_avg_rating Average energy rating')
+                lines.append(f'# TYPE wellness_energy_avg_rating gauge')
+                lines.append(f'wellness_energy_avg_rating {metrics["plan_engine"]["avg_energy_rating"]}')
+            
             return '\n'.join(lines)
         
         else:
