@@ -1,8 +1,9 @@
 # Current Project Status - Well-Being MVP
 *Last Updated: August 13, 2025*  
-**STATUS_SOURCE**: execution_plan.md (authoritative) | This file: summary view only
+**STATUS_SOURCE**: execution_plan.md (authoritative) | This file: summary view only  
+**RELEASE STATUS**: 🎉 **v1.0.0 Production Release** (Tagged: ed291de)
 
-## Overall Progress: 100% Complete ✅
+## Overall Progress: 100% Complete + Production Ready ✅
 
 ### Phase Completion Summary
 
@@ -21,7 +22,7 @@
 - **Real Health Metrics**: All core APIs integrated (Steps, HR, Sleep, Stress)
 - **Enhanced UI**: Delta display (+5), previous score, A/M indicators
 - **7-Day History**: ScoreHistory.mc circular buffer with persistence
-- **Auto-Refresh**: Morning scheduler (7-11am window) *wiring needed*
+- **Auto-Refresh**: Morning scheduler (7-11am window) fully integrated (single daily run)
 - **Manual Refresh**: Button-triggered with 5-minute throttle
 - **Settings Menu**: Runtime feature toggles
 - **Structured Logging**: ErrorCodes + Logger framework
@@ -50,19 +51,9 @@
 - ✅ **End-to-end Testing**: Test suite validates all scenarios
 - ✅ **Documentation**: Status consolidated and verified
 
-## Next Priority Actions
+## Post-Release Mode
 
-### Option A: Complete Phase 4 (Recommended)
-1. Implement real steps via ActivityMonitor
-2. Add 7-day history circular buffer
-3. Enhance UI with refresh mode indicators
-4. Complete documentation
-
-### Option B: Jump to Production
-1. Enable ENABLE_SLEEP and ENABLE_STRESS flags
-2. Deploy to actual device
-3. Gather real-world usage data
-4. Iterate based on experience
+All planned phase work is complete. Focus has shifted to observation (stability, battery, data completeness) before considering any new feature proposals. No open functional tasks remain.
 
 ## Key Files & Locations
 
@@ -119,9 +110,8 @@
 - Feature flags provide safe toggles
 
 ### Minimal Risk ⚠️
-- Single remaining integration (auto-refresh wiring)
-- Device testing needed to validate real API data
-- Minor: Morning auto-refresh not yet functional
+- Real-world device observation (battery + daily trigger consistency)
+- Long-term metric availability variance (e.g., sleep data delays)
 
 ### Resolved Risks ✅
 - ~~Formula accuracy~~ - Validated with test suite
@@ -137,10 +127,10 @@
 - Performance: <50ms computation time ✅
 - Automation: 90% of Phase 4 tasks automated ✅
 
-### Pending Validation
-- Auto-refresh integration (AC3 wiring)
-- Real device testing with actual health data
-- Battery impact with real API polling
+### Pending Observation (Not Blocking Release)
+- Real device multi-day battery profile
+- Longitudinal auto-refresh success rate
+- User subjective validation of score relevance
 
 ## Repository Health
 
