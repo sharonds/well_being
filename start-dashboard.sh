@@ -38,6 +38,11 @@ if [[ -z "${GRAFANA_ADMIN_USER:-}" || -z "${GRAFANA_ADMIN_PASSWORD:-}" ]]; then
     warn "Grafana admin credentials not set (using defaults - CHANGE BEFORE INGESTING REAL DATA)"
 fi
 
+# Security check: Refuse to start with default credentials (addresses ChatGPT-5 security gap)
+if [[ "${GRAFANA_ADMIN_USER:-}" == "admin" ]] || [[ "${GRAFANA_ADMIN_PASSWORD:-}" == "admin" ]]; then
+    abort "SECURITY RISK: Default Grafana credentials detected. Change GRAFANA_ADMIN_USER and GRAFANA_ADMIN_PASSWORD in .env before starting."
+fi
+
 if [[ -z "${INFLUXDB_TOKEN:-}" ]]; then
     warn "InfluxDB token not set (using default - CHANGE BEFORE INGESTING REAL DATA)"
 fi

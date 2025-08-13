@@ -13,6 +13,11 @@ class IntegrationTests {
         results.add(testErrorHandlingIntegration());
         results.add(testPerformanceRequirement());
         
+        // Auto-refresh integration tests (addresses ChatGPT-5 review gap)
+        results.add(testAutoRefreshSingleTrigger());
+        results.add(testAutoRefreshNoDuplicates());
+        results.add(testLateComputeFallback());
+        
         // Report results
         var passed = 0;
         var total = results.size();
@@ -123,6 +128,72 @@ class IntegrationTests {
             return passed;
         } catch (e) {
             Sys.println("Performance requirement test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+    
+    // Test auto-refresh triggers once within window (addresses ChatGPT-5 gap)
+    public static function testAutoRefreshSingleTrigger() {
+        try {
+            // Mock scenario: 8am on new day, no previous auto-refresh
+            var currentDate = "20250813";
+            var currentHour = 8;
+            var lastScoreDate = "20250812"; // Previous day
+            var autoRefreshDate = null; // No auto-refresh yet today
+            var manualRunToday = false;
+            var lastComputeMs = 0; // Long time ago
+            var nowMs = 400000; // Well past throttle
+            
+            var shouldTrigger = Scheduler.shouldAuto(currentDate, currentHour, lastScoreDate, autoRefreshDate, manualRunToday, lastComputeMs, nowMs);
+            
+            var passed = shouldTrigger; // Should trigger in 7-11am window
+            Sys.println("Auto-refresh single trigger: " + (shouldTrigger ? "TRIGGERS" : "NO TRIGGER") + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Auto-refresh single trigger test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+    
+    // Test auto-refresh doesn't trigger twice same day (negative case)
+    public static function testAutoRefreshNoDuplicates() {
+        try {
+            // Mock scenario: 9am on same day, already auto-refreshed
+            var currentDate = "20250813";
+            var currentHour = 9;
+            var lastScoreDate = "20250813"; // Same day
+            var autoRefreshDate = "20250813"; // Already auto-refreshed today
+            var manualRunToday = false;
+            var lastComputeMs = 300000; // Recent but past throttle
+            var nowMs = 700000;
+            
+            var shouldTrigger = Scheduler.shouldAuto(currentDate, currentHour, lastScoreDate, autoRefreshDate, manualRunToday, lastComputeMs, nowMs);
+            
+            var passed = !shouldTrigger; // Should NOT trigger (already ran today)
+            Sys.println("Auto-refresh no duplicates: " + (shouldTrigger ? "TRIGGERS" : "NO TRIGGER") + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Auto-refresh no duplicates test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+    
+    // Test late compute fallback after morning window
+    public static function testLateComputeFallback() {
+        try {
+            // Mock scenario: 2pm, no score today yet, no manual run
+            var currentDate = "20250813";
+            var currentHour = 14; // 2pm - after 11am window
+            var lastScoreDate = "20250812"; // No score today
+            var manualRunToday = false;
+            
+            var shouldLateCompute = Scheduler.shouldLateCompute(currentDate, currentHour, lastScoreDate, manualRunToday);
+            
+            var passed = shouldLateCompute; // Should trigger late compute
+            Sys.println("Late compute fallback: " + (shouldLateCompute ? "TRIGGERS" : "NO TRIGGER") + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Late compute fallback test: FAIL - " + e.getErrorMessage());
             return false;
         }
     }
