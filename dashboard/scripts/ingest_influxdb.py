@@ -72,7 +72,7 @@ def create_wb_score_point(record: Dict[str, Any]) -> Point:
         .tag("formula_version", record["formula_version"]) \
         .tag("run_mode", record.get("run_mode", "unknown")) \
         .field("score", record["score"]) \
-        .time(parse_date(record["date"]), WritePrecision.D)
+        .time(parse_date(record["date"]), WritePrecision.S)
     return point
 
 def create_wb_contrib_points(record: Dict[str, Any]) -> list[Point]:
@@ -86,7 +86,7 @@ def create_wb_contrib_points(record: Dict[str, Any]) -> list[Point]:
             .tag("formula_version", record["formula_version"]) \
             .field("contribution", float(contrib_value)) \
             .field("weight", float(record["weights_active"].get(metric, 0.0))) \
-            .time(date, WritePrecision.D)
+            .time(date, WritePrecision.S)
         points.append(point)
     
     return points
@@ -105,7 +105,7 @@ def create_wb_quality_point(record: Dict[str, Any]) -> Point:
         .field("missing_count", missing_count) \
         .field("completeness_pct", completeness_pct) \
         .field("error_count", len(record.get("error_codes", []))) \
-        .time(parse_date(record["date"]), WritePrecision.D)
+        .time(parse_date(record["date"]), WritePrecision.S)
     
     return point
 

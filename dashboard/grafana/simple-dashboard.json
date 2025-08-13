@@ -1,0 +1,100 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": null,
+    "title": "Wellness Simple Dashboard",
+    "tags": ["wellness"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 0,
+    "refresh": "",
+    "panels": [
+      {
+        "datasource": {
+          "type": "influxdb",
+          "uid": "YOUR_DATASOURCE_UID"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "Score",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "always",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 1,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": false
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "influxdb",
+              "uid": "YOUR_DATASOURCE_UID"
+            },
+            "query": "from(bucket: \"metrics\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"wb_score\")\n  |> filter(fn: (r) => r._field == \"score\")",
+            "refId": "A"
+          }
+        ],
+        "title": "Wellness Score - Last 30 Days",
+        "type": "timeseries"
+      }
+    ]
+  }
+}
