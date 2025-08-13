@@ -79,3 +79,6 @@ certificates/
 *.pfx
 *.jksISSUE_PHASE2_DRAFT.md
 ISSUE_PHASE3_DRAFT.md
+
+# Large auto-generated dashboard files
+dashboard/grafana/provisioning/dashboards/json/

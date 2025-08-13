@@ -50,7 +50,7 @@ Repository: https://github.com/sharonds/well_being
 Branch protection + CI + CodeQL enabled  
 Copilot Code Review integration active
 
-### Dashboard Parallel Track (Phase 1 COMPLETE ✅)
+### 🎉 Dashboard Parallel Track (Phase 1 COMPLETE ✅)
 | Item | Status | Notes |
 |------|--------|-------|
 | Security scaffold (.env.example, precommit guard) | ✅ | Phase 0 gate assets committed (PR #26) |
@@ -59,8 +59,10 @@ Copilot Code Review integration active
 | Synthetic 30-day export | ✅ | JSONL validates successfully (PR #27) |
 | **InfluxDB ingestion** | ✅ | **Complete pipeline with 3 measurements (PR #29)** |
 | **4 baseline panels** | ✅ | **Score/Contrib/Quality/Errors + provisioning (PR #30)** |
-| One-command setup | ✅ | Complete pipeline automation (PR #30) |
-| Real data ingestion | 🔒 | Blocked until checklist complete |
+| **Docker infrastructure** | ✅ | **Complete stack with port isolation (3001/8087)** |
+| **Security hardening** | ✅ | **9/9 checklist items complete (PR #31)** |
+| One-command setup | ✅ | `./start-dashboard.sh` with health checks |
+| **Real data ingestion** | ✅ | **Ready - all security gates passed** |
 
 # Execution Plan (Automation-Prioritized)
 
