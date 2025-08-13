@@ -68,6 +68,37 @@ PYTHONPATH=. python3 dashboard/scripts/demo_ingestion.py
 ```
 Runs full pipeline: export → validate → ingest. Requires InfluxDB setup.
 
+## Grafana Dashboard (Phase 1 Complete)
+4 baseline panels for well-being score analysis and monitoring:
+
+### Manual Dashboard Import
+```bash
+# Import pre-built dashboard JSON
+# Grafana UI: + → Import → Upload dashboard/grafana/wellbeing-dashboard.json
+```
+
+### Automated Provisioning
+```bash
+# Prerequisites: Grafana running, .env with GRAFANA_ADMIN_PASSWORD
+PYTHONPATH=. python3 dashboard/scripts/provision_grafana.py
+```
+Auto-creates InfluxDB datasource + provisions dashboard
+
+### Complete Setup (Recommended)
+```bash  
+# Full pipeline: data generation → ingestion → dashboard provisioning
+PYTHONPATH=. python3 dashboard/scripts/setup_dashboard.py
+```
+One-command setup for complete dashboard experience.
+
+### 📊 Dashboard Panels
+1. **Score Timeline**: Daily score trends with threshold colors
+2. **Metric Contributions**: Stacked view of per-metric contributions  
+3. **Data Completeness**: Percentage of available metrics per day
+4. **Error Code Frequency**: System health and data quality monitoring
+
+Access: http://localhost:3000/d/wellbeing/wellbeing-dashboard
+
 ## Notes
 - Do not store personal raw exports in repo; use `private/` directory.
 - Formula version pinned via WB_FORMULA_VERSION (.env).
