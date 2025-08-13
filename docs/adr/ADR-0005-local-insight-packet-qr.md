@@ -1,7 +1,7 @@
 # ADR-0005: Local Compute + QR Insight Packet (No Companion App)
 
 Date: 2025-08-13
-Status: Proposed
+Status: Accepted
 Decision Makers: @sharonds
 
 ## Context
@@ -32,6 +32,10 @@ Adopt a watch-only computation flow with a “tiny insight packet” shared to t
 ## Scope (now)
 - Watch app renders QR with insight_packet_v1 (≤1KB) and a short code for copy.
 - Web app scans/imports packet and stores locally (IndexedDB). No backend required.
+
+## Implementation Notes (2025-08-13)
+- Web import page implemented with QR scan + paste, local IndexedDB storage, and schema validation.
+- E2E harness added (Playwright) to verify import and storage.
 
 ## Out of Scope (now)
 - iOS companion app, background sync, server ingestion, Garmin Health API integration.

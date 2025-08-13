@@ -3,6 +3,12 @@
 **STATUS_SOURCE**: execution_plan.md (authoritative) | This file: summary view only  
 **RELEASE STATUS**: 🎉 **v1.0.0 Production Release** (Tagged: ed291de)
 
+## Phase 5A (Plan Engine + Web Import) — Delivered
+- PlanEngine integrated with anomaly guardrails and persistence
+- Web Import (zero-backend): QR scan + paste, IndexedDB, schema validation
+- E2E harness validates import + storage
+- Docs/ADR updated and linked in README
+
 ## Overall Progress: 100% Complete + Production Ready ✅
 
 ### Phase Completion Summary

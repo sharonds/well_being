@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### 🔧 Improved - 2025-08-13
+- **CI/CD Pipeline**: Added web import E2E testing
+  - GitHub Actions workflow for automated testing on push/PR
+  - Local static server with `npm run serve` command
+  - Playwright E2E tests with `npm run e2e`
+  - Zero-dependency server implementation (Node.js only)
+  - Cross-platform browser opening support
+
 - **Prometheus Metrics**: Added Phase 5 plan metrics
   - wellness_plans_generated_total counter
   - wellness_adherence_logged_total counter  
@@ -26,6 +33,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Import Fixes**: Corrected remaining import paths
   - alerts.py now uses dashboard.* imports
   - Ensures stability across all environments
+
+### 🧪 Added - 2025-08-13
+- **Web Import UX (Zero-backend)**
+  - Import page with QR scan (BarcodeDetector) + paste fallback
+  - IndexedDB storage with idempotent upsert and last-write-wins by created_at
+  - Lightweight JSON schema validator for envelope/payload
+  - File:// sample prefill fallback for offline/without server
+- **E2E Harness**
+  - Playwright script `web/import/e2e/run-e2e.mjs`
+  - Serves repo, imports sample packet, asserts IndexedDB contents
+  - PASS confirmed locally
 
 ## [5.0.0] - 2025-08-13 - Phase 5A: Plan Engine
 

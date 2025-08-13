@@ -41,9 +41,10 @@ Date: 2025-08-13
 
 5) Web sharing (QR + paste, zero-backend)
 - Watch: render QR for insight_packet_v1; fallback to copy/paste JSON
-- Web app stub: Import page with “Scan QR” and “Paste JSON”
-- Storage: IndexedDB helper with idempotent upsert by (date,type)
-- JSON Schema: validate envelope + payload; version-gated parsing
+- Web app: Import page with “Scan QR” and “Paste JSON” (HTTPS/localhost for camera)
+- Storage: IndexedDB helper with idempotent upsert by (date,type), last-write-wins by created_at
+- JSON Schema: validate envelope + payload; version-gated parsing (lightweight validator)
+- E2E: Playwright harness validates import + IndexedDB
 
 6) Config + feature flags
 - dashboard/config.py additions: thresholds (anomaly, sleep variance), windows (trend), flags (ENABLE_PLAN_ENGINE, ENABLE_INSIGHT_CARD, ENABLE_COACH_CHIP)
@@ -70,8 +71,8 @@ Date: 2025-08-13
 - [ ] Persistence: plan_daily.jsonl, adherence_daily.jsonl via atomic utilities (done)
 - [ ] Morning job: generate plan before metrics; idempotent; ENABLE_PLAN_ENGINE guard (done)
 - [ ] On-device UI: Plan card, chips, Done/Snooze, energy modal (minimal)
-- [ ] Web import stub: QR scan + paste input page; JSON schema; IndexedDB helper
-- [ ] Sample packet: add docs/specs/insight_packet_v1.sample.json for dev/testing
+- [x] Web import: QR scan + paste page; JSON schema; IndexedDB helper; file:// fallback
+- [x] Sample packet: add docs/specs/insight_packet_v1.sample.json for dev/testing
 - [ ] Metrics/alerts: plan metrics in Prometheus; soft alert if no plan today (done)
 - [ ] Privacy scan: include new files and packet schema; verify green
 - [ ] Docs: Link ADR-0005 and web import spec from README and phase_5_issue; update CHANGELOG

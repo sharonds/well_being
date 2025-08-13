@@ -337,3 +337,33 @@ Before ingesting personal Garmin data into the planned local dashboard:
 - (Optional) Install pre-commit guard: `ln -s ../../scripts/precommit-guard.sh .git/hooks/pre-commit`.
 
 Personal-use only; unofficial API access may break or violate ToS – proceed conservatively.
+
+## Phase 5: Web Import (QR or Paste)
+
+Zero-backend import to view Today + History in your browser:
+
+- ADR: docs/adr/ADR-0005-local-insight-packet-qr.md
+- Spec: docs/specs/QR-Insight-Packet-and-Web-Import.md
+- Import page: web/import/index.html
+- Sample packet: docs/specs/insight_packet_v1.sample.json
+
+Notes:
+- QR scan requires a secure context (https or localhost) and camera permission.
+- Paste import works everywhere and is the recommended fallback.
+
+### E2E harness (optional)
+- Prereq: Node 18+ and Playwright installed (`npm i -D playwright` then `npx playwright install chromium`).
+- Run: `node web/import/e2e/run-e2e.mjs`
+- It will serve the repo, open the import page, paste the sample packet, import, then assert IndexedDB contents. Outputs PASS/FAIL in the console.
+
+Minor notes:
+- Camera access requires HTTPS or localhost due to browser security.
+- Not all browsers support BarcodeDetector; paste works everywhere.
+- If you open the page as file://, the external sample fetch may be blocked—use a local server (the e2e harness does this automatically).
+
+### Quick local hosting
+- Start a local server and open the import page:
+  - `npm run serve`
+
+### CI
+- GitHub Actions runs the Web Import e2e on push/PR to main: `.github/workflows/web-import-e2e.yml`

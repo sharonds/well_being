@@ -1,0 +1,32 @@
+{
+  "name": "well_being",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A Connect IQ watch app that provides daily readiness scoring based on wellness metrics.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "serve": "node web/import/serve.mjs --open",
+    "e2e": "node web/import/e2e/run-e2e.mjs",
+    "e2e:install": "npm i -D playwright && npx playwright install chromium",
+    "test": "echo \"No JS unit tests; use npm run e2e for browser e2e\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharonds/well_being.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sharonds/well_being/issues"
+  },
+  "homepage": "https://github.com/sharonds/well_being#readme",
+  "devDependencies": {
+    "playwright": "^1.46.1"
+  }
+}

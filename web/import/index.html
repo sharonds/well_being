@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Well-Being – Import Insight Packet</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
+    .card { max-width: 720px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 12px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    textarea { width: 100%; height: 140px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    button { padding: 10px 14px; border: none; border-radius: 8px; background: #0d6efd; color: white; cursor: pointer; }
+    button.secondary { background: #6c757d; }
+    .muted { color: #666; }
+    .ok { color: #198754; }
+    .err { color: #dc3545; }
+    .list { margin-top: 12px; }
+    .item { padding: 8px; border-bottom: 1px solid #eee; }
+    .item:last-child { border-bottom: none; }
+    .badge { display: inline-block; background: #eef2ff; color: #3730a3; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Import Insight Packet</h1>
+    <p class="muted">Scan from your watch or paste JSON. Data stays in your browser (IndexedDB).</p>
+    <ul class="muted" style="margin-top:8px;">
+      <li>Camera requires HTTPS or localhost (browser security).</li>
+      <li>QR scanning isn’t supported in all browsers; paste works everywhere.</li>
+      <li>Opening as file:// may block loading the sample; use a local server.</li>
+    </ul>
+
+    <div class="row" style="margin: 12px 0;">
+      <button id="scanBtn">Scan QR (camera)</button>
+      <button id="clearBtn" class="secondary">Clear Local Data</button>
+    </div>
+
+    <div id="scanner" style="display:none; margin: 8px 0;">
+      <video id="video" autoplay playsinline style="width:100%; max-width: 480px; border-radius:8px; background:#000"></video>
+    </div>
+
+    <label for="json">Or paste JSON:</label>
+    <textarea id="json" placeholder='{"version":"v1","type":"plan_daily",...}'></textarea>
+    <div class="row">
+      <button id="importBtn">Import</button>
+      <span id="status" class="muted"></span>
+    </div>
+
+    <h2>Today & History</h2>
+    <div id="history" class="list"></div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
