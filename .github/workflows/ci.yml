@@ -103,6 +103,39 @@ jobs:
               echo "⚠️ Consider adding to .gitignore: $pattern"
             fi
           done
+          
+          # Privacy scan for telemetry files
+          echo "Running privacy scan..."
+          if command -v python3 &> /dev/null; then
+            # Check any telemetry files that might exist
+            if ls dashboard/data/telemetry_*.jsonl 1> /dev/null 2>&1; then
+              echo "Found telemetry files, running privacy scan..."
+              for telemetry_file in dashboard/data/telemetry_*.jsonl; do
+                if [ -f "$telemetry_file" ]; then
+                  echo "Scanning: $telemetry_file"
+                  PYTHONPATH=. python3 dashboard/scripts/privacy_scan.py "$telemetry_file" || {
+                    echo "❌ Privacy scan failed on $telemetry_file"
+                    exit 1
+                  }
+                fi
+              done
+            else
+              echo "✅ No telemetry files found to scan"
+            fi
+          else
+            echo "⚠️ Python3 not available, skipping privacy scan"
+          fi
+          
+          # Verify raw data files are gitignored
+          echo "Checking raw data protection..."
+          if [ -f dashboard/data/garmin_wellness.jsonl ]; then
+            echo "❌ ERROR: Raw Garmin data file should not be committed!"
+            echo "Raw health data detected in: dashboard/data/garmin_wellness.jsonl"
+            exit 1
+          else
+            echo "✅ No raw data files committed"
+          fi
+          
           bash scripts/run_tests.sh || echo "Test harness not yet implemented; treating as pass"
 
       - name: Archive Build Artifact

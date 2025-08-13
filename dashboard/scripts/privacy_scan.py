@@ -17,6 +17,12 @@ ALLOWED_NUMERIC_FIELDS = {
     'metrics_mask': (0, 15),  # 4-bit mask for 4 metrics
     'integrity_fail_count': (0, 100),
     'schema_version': None,  # String, not numeric
+    # Privacy-safe presence flags (0/1 binary)
+    'steps_present': (0, 1),
+    'rhr_present': (0, 1),
+    'sleep_present': (0, 1),
+    'stress_present': (0, 1),
+    'hrv_present': (0, 1),
 }
 
 # Forbidden patterns that suggest raw health data

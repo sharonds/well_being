@@ -11,11 +11,12 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from garminconnect import Garmin
 
-# Import Phase 3 modules
+# Import Phase 3 modules and score engine
 dashboard_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, dashboard_path)
 from scripts.phase3.auto_run_tracker import add_auto_run_flag
 from scripts.phase3.battery_safeguard import should_skip_battery
+from score.engine import compute_score, MetricInputs, ScoreFlags
 
 # Set up logging
 logging.basicConfig(
@@ -129,82 +130,35 @@ class GarminWellnessFetcher:
     
     def calculate_wellness_score(self, metrics: Dict) -> int:
         """
-        Calculate wellness score using our standard formula.
-        This should match the logic in dashboard/score/engine.py
+        Calculate wellness score using the unified score engine.
+        This ensures consistency with dashboard/score/engine.py
         """
-        score = 0
-        weights = {
-            'steps': 0.25,
-            'restingHeartRate': 0.25,
-            'sleepHours': 0.25,
-            'stress': 0.25
-        }
+        # Convert metrics to engine format
+        inputs = MetricInputs(
+            steps=metrics.get('steps'),
+            rhr=metrics.get('restingHeartRate'),
+            sleep_hours=metrics.get('sleepHours'),
+            stress=metrics.get('stress')
+        )
         
-        # Steps contribution (0-25 points)
-        steps = metrics.get('steps', 0)
-        if steps >= 10000:
-            steps_score = 25
-        elif steps >= 7500:
-            steps_score = 20
-        elif steps >= 5000:
-            steps_score = 15
-        elif steps >= 2500:
-            steps_score = 10
-        else:
-            steps_score = 5
-        score += steps_score
+        # Use flags based on metric availability (Phase 3 approach)
+        flags = ScoreFlags(
+            enable_sleep=metrics.get('sleepHours') is not None,
+            enable_stress=metrics.get('stress') is not None,
+            enable_hrv=False  # Not implemented yet
+        )
         
-        # Resting Heart Rate contribution (0-25 points)
-        rhr = metrics.get('restingHeartRate', 60)
-        if rhr < 50:
-            rhr_score = 25
-        elif rhr < 60:
-            rhr_score = 20
-        elif rhr < 70:
-            rhr_score = 15
-        elif rhr < 80:
-            rhr_score = 10
-        else:
-            rhr_score = 5
-        score += rhr_score
-        
-        # Sleep contribution (0-25 points)
-        sleep = metrics.get('sleepHours', 0)
-        if sleep >= 8:
-            sleep_score = 25
-        elif sleep >= 7:
-            sleep_score = 20
-        elif sleep >= 6:
-            sleep_score = 15
-        elif sleep >= 5:
-            sleep_score = 10
-        else:
-            sleep_score = 5
-        score += sleep_score
-        
-        # Stress contribution (0-25 points, inverse - lower is better)
-        stress = metrics.get('stress', 50)
-        if stress <= 25:
-            stress_score = 25
-        elif stress <= 40:
-            stress_score = 20
-        elif stress <= 55:
-            stress_score = 15
-        elif stress <= 70:
-            stress_score = 10
-        else:
-            stress_score = 5
-        score += stress_score
-        
-        return min(100, max(0, score))
+        result = compute_score(inputs, flags)
+        return result.score
     
     def get_band(self, score: int) -> str:
-        """Get wellness band based on score."""
-        if score >= 80:
+        """Get wellness band based on score using engine logic."""
+        # Use the engine's band mapping for consistency
+        if 70 <= score <= 100:
             return "Go for it"
-        elif score >= 60:
+        elif 40 <= score <= 69:
             return "Maintain"
-        else:
+        else:  # 0 <= score <= 39
             return "Take it easy"
     
     def fetch_date_range(self, start_date: datetime, end_date: datetime) -> List[Dict]:

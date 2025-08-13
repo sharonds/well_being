@@ -6,9 +6,16 @@ Track integrity failures and ensure <1% failure rate over 14 days.
 
 import json
 import logging
+import os
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
+# Add dashboard path for config import
+dashboard_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, dashboard_path)
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -92,11 +99,14 @@ def get_expected_band(score: float) -> str:
     else:
         return "Go for it"
 
-def calculate_integrity_failure_rate(records: List[Dict], days: int = 14) -> Dict:
+def calculate_integrity_failure_rate(records: List[Dict], days: Optional[int] = None) -> Dict:
     """Calculate integrity failure rate over N days.
     
-    AC3: Ensure <1% integrity failures over 14 days.
+    AC3: Ensure <1% integrity failures over configurable days.
     """
+    if days is None:
+        days = Config.INTEGRITY_ANALYSIS_DAYS
+    
     # Filter to last N days
     cutoff_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
     recent_records = [r for r in records if r.get('date', '') >= cutoff_date]
@@ -120,20 +130,26 @@ def calculate_integrity_failure_rate(records: List[Dict], days: int = 14) -> Dic
             all_errors.extend([f"Date {record.get('date', 'unknown')}: {err}" for err in errors])
     
     failure_rate = (failed_records / len(recent_records)) * 100
-    alert_triggered = failure_rate >= 1.0  # AC3: <1% threshold
+    alert_triggered = failure_rate >= Config.INTEGRITY_FAILURE_THRESHOLD_PCT
     
     result = {
         'total_records': len(recent_records),
         'failed_records': failed_records,
         'failure_rate_pct': round(failure_rate, 2),
         'alert': alert_triggered,
-        'errors': all_errors[:10],  # Limit to first 10 errors
+        'errors': all_errors[:Config.MAX_ERROR_SAMPLES],
         'days_analyzed': days
     }
     
     if alert_triggered:
-        logger.warning(f"INTEGRITY_FAILURE_RATE: {failure_rate:.2f}% >= 1.0% threshold "
+        logger.warning(f"INTEGRITY_FAILURE_RATE: {failure_rate:.2f}% >= {Config.INTEGRITY_FAILURE_THRESHOLD_PCT}% threshold "
                       f"({failed_records}/{len(recent_records)} records)")
+        
+        # AC3 Remediation: Generate detailed failure report
+        remediation_report = generate_remediation_report(recent_records, all_errors)
+        result['remediation'] = remediation_report
+        
+        logger.info(f"Generated remediation report with {len(remediation_report['error_categories'])} error types")
     else:
         logger.info(f"Integrity check OK: {failure_rate:.2f}% failure rate "
                    f"({failed_records}/{len(recent_records)} records)")
@@ -238,6 +254,103 @@ def main():
             print(f"   Failure rate: {result['failure_rate_pct']}% over {args.days} days")
             print(f"   Records: {result['failed_records']}/{result['total_records']} failed")
             exit(0)
+
+def generate_remediation_report(records: List[Dict], all_errors: List[str]) -> Dict:
+    """Generate remediation report for integrity failures.
+    
+    AC3 Remediation: Categorize errors and suggest fixes.
+    """
+    from collections import Counter
+    import re
+    
+    # Categorize errors by type
+    error_categories = {
+        'missing_fields': 0,
+        'score_range': 0, 
+        'band_mismatch': 0,
+        'date_format': 0,
+        'other': 0
+    }
+    
+    error_samples = {}
+    failing_dates = set()
+    
+    for error_msg in all_errors:
+        # Extract date from error message
+        date_match = re.search(r'Date ([^:]+):', error_msg)
+        if date_match:
+            failing_dates.add(date_match.group(1))
+        
+        # Categorize error type
+        if 'Missing required field' in error_msg:
+            error_categories['missing_fields'] += 1
+            if 'missing_fields' not in error_samples:
+                error_samples['missing_fields'] = error_msg
+        elif 'out of valid range' in error_msg:
+            error_categories['score_range'] += 1
+            if 'score_range' not in error_samples:
+                error_samples['score_range'] = error_msg
+        elif 'band' in error_msg.lower() and ('inconsistent' in error_msg.lower() or 'expected' in error_msg.lower()):
+            error_categories['band_mismatch'] += 1 
+            if 'band_mismatch' not in error_samples:
+                error_samples['band_mismatch'] = error_msg
+        elif 'date format' in error_msg.lower():
+            error_categories['date_format'] += 1
+            if 'date_format' not in error_samples:
+                error_samples['date_format'] = error_msg
+        else:
+            error_categories['other'] += 1
+            if 'other' not in error_samples:
+                error_samples['other'] = error_msg
+    
+    # Generate recommendations  
+    recommendations = []
+    if error_categories['band_mismatch'] > 0:
+        recommendations.append("Band mismatch errors detected - check scoring formula consistency")
+    if error_categories['score_range'] > 0:
+        recommendations.append("Score range errors - validate input data quality")
+    if error_categories['missing_fields'] > 0:
+        recommendations.append("Missing field errors - check data ingestion pipeline")
+    
+    return {
+        'timestamp': datetime.now().isoformat(),
+        'failing_dates': sorted(list(failing_dates)),
+        'error_categories': error_categories,
+        'error_samples': error_samples,
+        'recommendations': recommendations,
+        'total_errors': len(all_errors),
+        'affected_dates_count': len(failing_dates)
+    }
+
+def quarantine_failing_records(records: List[Dict], quarantine_path: str = 'quarantined_records.jsonl') -> int:
+    """Quarantine records that fail integrity validation.
+    
+    AC3 Optional: Move failing records to quarantine file.
+    """
+    quarantined = 0
+    valid_records = []
+    quarantined_records = []
+    
+    for record in records:
+        is_valid, errors = validate_record_integrity(record)
+        if is_valid:
+            valid_records.append(record)
+        else:
+            quarantined_records.append({
+                'record': record,
+                'errors': errors,
+                'quarantined_at': datetime.now().isoformat()
+            })
+            quarantined += 1
+    
+    if quarantined_records:
+        with open(quarantine_path, 'a') as f:
+            for quarantined in quarantined_records:
+                f.write(json.dumps(quarantined) + '\n')
+        
+        logger.info(f"Quarantined {len(quarantined_records)} failing records to {quarantine_path}")
+    
+    return quarantined
 
 if __name__ == '__main__':
     main()
