@@ -13,8 +13,9 @@ Local analytics extension for readiness score explainability (trend, contributio
 
 ## Quick Run (Manual)
 ```bash
-python3 dashboard/score/engine.py          # Show example scores
-python3 dashboard/tests/test_vectors.py    # Run parity assertions
+# From project root:
+PYTHONPATH=/Users/sharonsciammas/well_being python3 dashboard/score/engine.py          # Show example scores
+PYTHONPATH=/Users/sharonsciammas/well_being python3 dashboard/tests/test_vectors.py    # Run parity assertions
 ```
 
 Expected output:
