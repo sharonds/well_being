@@ -79,3 +79,7 @@ certificates/
 *.pfx
 *.jksISSUE_PHASE2_DRAFT.md
 ISSUE_PHASE3_DRAFT.md
+
+# Dashboard security - private data directory
+private/
+*.env
