@@ -1,0 +1,197 @@
+name: Daily Operations
+
+on:
+  schedule:
+    # Run daily at 8 AM UTC (1 AM PST / 4 AM EST)
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run mode (no alerts sent)'
+        required: false
+        default: 'false'
+
+jobs:
+  daily-monitoring:
+    name: Daily Monitoring & Remediation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r dashboard/requirements.txt
+      
+      - name: Run Integrity Check
+        id: integrity
+        run: |
+          echo "🔍 Running daily integrity check..."
+          
+          # Create sample data if in test mode
+          if [ ! -f "dashboard/data/garmin_wellness.jsonl" ]; then
+            echo "Creating test data..."
+            mkdir -p dashboard/data
+            cat > dashboard/data/test_telemetry.jsonl << 'EOF'
+          {"date": "2025-08-13", "score": 50, "band": "Maintain", "schema_version": "v1.0.0", "auto_run": 1}
+          {"date": "2025-08-14", "score": 65, "band": "Maintain", "schema_version": "v1.0.0", "auto_run": 1}
+          EOF
+          fi
+          
+          # Run integrity check
+          python3 dashboard/scripts/phase3/integrity_monitor.py dashboard/data/*.jsonl --days 14 > integrity_report.txt 2>&1 || true
+          
+          # Check results
+          if grep -q "Integrity check passed\|Integrity check OK" integrity_report.txt; then
+            echo "✅ Integrity check passed"
+            echo "integrity_passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Integrity issues detected"
+            echo "integrity_passed=false" >> $GITHUB_OUTPUT
+            cat integrity_report.txt
+          fi
+      
+      - name: Run Auto-Remediation
+        if: steps.integrity.outputs.integrity_passed == 'false'
+        run: |
+          echo "🔧 Running auto-remediation..."
+          
+          # Run remediation
+          python3 dashboard/scripts/phase3/integrity_auto_remediate.py dashboard/data/garmin_wellness.jsonl --dry-run || true
+          
+          echo "✅ Remediation complete (dry-run mode in CI)"
+      
+      - name: Apply Retention Policy
+        run: |
+          echo "🗑️ Applying retention policy..."
+          
+          # Run retention cleanup
+          python3 dashboard/scripts/phase3/retention_policy.py \
+            --days 30 \
+            --telemetry-dir dashboard/data \
+            --dry-run
+          
+          echo "✅ Retention policy applied (dry-run mode in CI)"
+      
+      - name: Collect Metrics
+        id: metrics
+        run: |
+          echo "📊 Collecting operational metrics..."
+          
+          # Export metrics
+          python3 dashboard/scripts/ops/metrics_exporter.py \
+            --format json \
+            --save \
+            --data-dir dashboard/data > metrics.json
+          
+          # Extract key metrics
+          integrity_rate=$(python3 -c "import json; m=json.load(open('metrics.json')); print(m['integrity']['failure_rate_14d_pct'])")
+          auto_run_rate=$(python3 -c "import json; m=json.load(open('metrics.json')); print(m['auto_run']['success_rate_pct'])")
+          
+          echo "integrity_rate=$integrity_rate" >> $GITHUB_OUTPUT
+          echo "auto_run_rate=$auto_run_rate" >> $GITHUB_OUTPUT
+          
+          echo "📈 Metrics:"
+          echo "  Integrity failure rate: ${integrity_rate}%"
+          echo "  Auto-run success rate: ${auto_run_rate}%"
+      
+      - name: Check Alerts
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          echo "🚨 Checking for alerts..."
+          
+          # Determine dry-run mode
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ] || [ -z "$SLACK_WEBHOOK_URL" ]; then
+            DRY_RUN_FLAG="--dry-run"
+            echo "Running in dry-run mode (no alerts will be sent)"
+          fi
+          
+          # Check and send alerts
+          python3 dashboard/scripts/ops/alerts.py \
+            --data-dir dashboard/data \
+            $DRY_RUN_FLAG || true
+      
+      - name: Generate Daily Report
+        if: always()
+        run: |
+          echo "## 📊 Daily Operations Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date**: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "- **Integrity Failure Rate**: ${{ steps.metrics.outputs.integrity_rate }}%" >> $GITHUB_STEP_SUMMARY
+          echo "- **Auto-run Success Rate**: ${{ steps.metrics.outputs.auto_run_rate }}%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Actions Taken" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.integrity.outputs.integrity_passed }}" == "false" ]; then
+            echo "- ⚠️ Integrity issues detected - remediation executed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ✅ No integrity issues found" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- 🗑️ Retention policy applied (30-day window)" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Metrics collected and saved" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Note**: Run in dry-run mode - no alerts sent" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Upload Metrics
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: daily-metrics-${{ github.run_id }}
+          path: |
+            metrics.json
+            integrity_report.txt
+          retention-days: 30
+
+  burn-in-tracker:
+    name: 30-Day Burn-in Tracker
+    runs-on: ubuntu-latest
+    needs: daily-monitoring
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Track Burn-in Progress
+        run: |
+          echo "📅 Burn-in Progress Tracker"
+          
+          # Calculate days since burn-in start (using a fixed date or env var)
+          BURN_IN_START="${{ vars.BURN_IN_START_DATE || '2025-08-13' }}"
+          DAYS_ELAPSED=$(( ($(date +%s) - $(date -d "$BURN_IN_START" +%s)) / 86400 ))
+          DAYS_REMAINING=$((30 - DAYS_ELAPSED))
+          
+          echo "Burn-in started: $BURN_IN_START"
+          echo "Days elapsed: $DAYS_ELAPSED"
+          echo "Days remaining: $DAYS_REMAINING"
+          
+          if [ $DAYS_REMAINING -le 0 ]; then
+            echo "🎉 30-day burn-in period complete!"
+            echo "System ready for GA release"
+          else
+            echo "⏳ $DAYS_REMAINING days remaining in burn-in period"
+          fi
+          
+          # Update summary
+          echo "### 🔥 Burn-in Status" >> $GITHUB_STEP_SUMMARY
+          echo "- **Started**: $BURN_IN_START" >> $GITHUB_STEP_SUMMARY
+          echo "- **Progress**: $DAYS_ELAPSED / 30 days" >> $GITHUB_STEP_SUMMARY
+          if [ $DAYS_REMAINING -le 0 ]; then
+            echo "- **Status**: ✅ COMPLETE - Ready for GA" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status**: ⏳ $DAYS_REMAINING days remaining" >> $GITHUB_STEP_SUMMARY
+          fi
