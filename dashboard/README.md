@@ -98,7 +98,6 @@ One-command setup for complete dashboard experience.
 4. **Error Code Frequency**: System health and data quality monitoring
 
 Access: http://localhost:3000/d/wellbeing/wellbeing-dashboard
-
 ## Notes
 - Do not store personal raw exports in repo; use `private/` directory.
 - Formula version pinned via WB_FORMULA_VERSION (.env).
