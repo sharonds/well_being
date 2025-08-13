@@ -14,9 +14,9 @@ from pathlib import Path
 # Add dashboard to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from config import Config
-from scripts.phase3.integrity_monitor import calculate_integrity_failure_rate, load_telemetry_records
-from scripts.phase3.auto_run_tracker import calculate_success_rate
+from dashboard.config import Config
+from dashboard.scripts.phase3.integrity_monitor import calculate_integrity_failure_rate, load_telemetry_records
+from dashboard.scripts.phase3.auto_run_tracker import calculate_success_rate
 # Note: completeness metrics are handled within completeness_monitor when needed.
 # No direct import required here to avoid tight coupling.
 

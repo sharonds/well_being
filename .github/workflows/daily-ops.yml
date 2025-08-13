@@ -89,6 +89,42 @@ jobs:
           
           echo "✅ Retention policy applied (dry-run mode in CI)"
       
+      - name: Generate Daily Plan
+        if: env.ENABLE_PLAN_ENGINE != 'false'
+        env:
+          ENABLE_PLAN_ENGINE: ${{ vars.ENABLE_PLAN_ENGINE || 'true' }}
+        run: |
+          echo "📋 Generating daily plan..."
+          
+          # Generate today's plan if enabled
+          if [ "$ENABLE_PLAN_ENGINE" == "true" ]; then
+            python3 -c "
+import sys
+import os
+sys.path.insert(0, '.')
+from dashboard.scripts.plan_engine import generate_daily_plan
+
+plan = generate_daily_plan('dashboard/data')
+print(f'✅ Generated plan: {plan.get(\"plan_text\", \"No plan text\")}')
+
+# Verify plan was written
+import json
+from datetime import date
+plan_file = 'dashboard/data/plan_daily.jsonl'
+if os.path.exists(plan_file):
+    with open(plan_file, 'r') as f:
+        lines = f.readlines()
+        if lines:
+            last_plan = json.loads(lines[-1])
+            if last_plan.get('date') == date.today().isoformat():
+                print(f'✅ Plan saved for {last_plan[\"date\"]}')
+            else:
+                print('⚠️ Plan date mismatch')
+" || echo "⚠️ Plan generation failed (non-critical)"
+          else
+            echo "⏭️ Plan Engine disabled - skipping"
+          fi
+      
       - name: Collect Metrics
         id: metrics
         run: |
@@ -149,6 +185,9 @@ jobs:
             echo "- ✅ No integrity issues found" >> $GITHUB_STEP_SUMMARY
           fi
           echo "- 🗑️ Retention policy applied (30-day window)" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ env.ENABLE_PLAN_ENGINE }}" == "true" ]; then
+            echo "- 📋 Daily plan generated" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- 📊 Metrics collected and saved" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
