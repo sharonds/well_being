@@ -1,69 +1,104 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Well-Being Dashboard Startup Script
-# Uses ports 3001 (Grafana) and 8087 (InfluxDB) to avoid conflicts
+# Ports (host): Grafana ${GRAFANA_PORT:-3001}, InfluxDB ${INFLUXDB_PORT:-8087}
 
-set -e
+set -euo pipefail
+
+RED='\033[0;31m'; YELLOW='\033[1;33m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'; NC='\033[0m'
+
+abort() { echo -e "${RED}❌ $1${NC}"; exit 1; }
+warn()  { echo -e "${YELLOW}⚠️  $1${NC}"; }
+info()  { echo -e "${BLUE}$1${NC}"; }
+ok()    { echo -e "${GREEN}✅ $1${NC}"; }
+
+trap 'abort "Script aborted (line $LINENO)"' ERR
 
 echo "🏥 Starting Well-Being Dashboard..."
-echo "📊 Grafana will be available at: http://localhost:3001"
-echo "📈 InfluxDB will be available at: http://localhost:8087"
-echo ""
 
-# Check if .env exists
+# ----------------------------------------------------------------------------
+# Environment
+# ----------------------------------------------------------------------------
 if [ ! -f .env ]; then
-    echo "❌ Error: .env file not found"
-    echo "💡 Please copy .env.example to .env and configure your credentials"
-    exit 1
+    abort ".env file not found. Copy .env.example to .env and configure values."
 fi
 
-# Source environment variables
-export $(cat .env | grep -v '^#' | xargs)
+# Safer env loading (supports empty values, ignores comments)
+set -o allexport
+source <(grep -v '^[[:space:]]*#' .env | sed '/^[[:space:]]*$/d')
+set +o allexport
 
-# Validate required variables
-if [ -z "$GRAFANA_ADMIN_USER" ] || [ -z "$GRAFANA_ADMIN_PASSWORD" ]; then
-    echo "⚠️  Warning: Grafana credentials not set in .env"
-    echo "   Using defaults (change these in production!)"
-fi
+: "${GRAFANA_PORT:=3001}"  # default if not set
+: "${INFLUXDB_PORT:=8087}"  # host port mapping (container 8086)
 
-if [ -z "$INFLUXDB_TOKEN" ]; then
-    echo "⚠️  Warning: InfluxDB token not set in .env"
-    echo "   Using default token (change this in production!)"
-fi
-
-echo "🚀 Starting Docker containers..."
-docker-compose up -d
-
+echo "📊 Grafana will be available at: http://localhost:${GRAFANA_PORT}"
+echo "📈 InfluxDB will be available at: http://localhost:${INFLUXDB_PORT}"
 echo ""
+
+if [[ -z "${GRAFANA_ADMIN_USER:-}" || -z "${GRAFANA_ADMIN_PASSWORD:-}" ]]; then
+    warn "Grafana admin credentials not set (using defaults - CHANGE BEFORE INGESTING REAL DATA)"
+fi
+
+if [[ -z "${INFLUXDB_TOKEN:-}" ]]; then
+    warn "InfluxDB token not set (using default - CHANGE BEFORE INGESTING REAL DATA)"
+fi
+
+# ----------------------------------------------------------------------------
+# Docker Compose detection
+# ----------------------------------------------------------------------------
+compose_cmd=""
+if command -v docker-compose >/dev/null 2>&1; then
+    compose_cmd="docker-compose"
+elif docker compose version >/dev/null 2>&1; then
+    compose_cmd="docker compose"
+else
+    abort "Neither 'docker-compose' nor 'docker compose' found. Install Docker Desktop or docker-compose."
+fi
+
+info "Using compose command: $compose_cmd"
+
+# ----------------------------------------------------------------------------
+# Start services
+# ----------------------------------------------------------------------------
+echo "🚀 Starting containers..."
+$compose_cmd up -d
+
 echo "⏳ Waiting for services to be ready..."
 
-# Wait for InfluxDB
-echo "   Checking InfluxDB..."
-until curl -sf http://localhost:${INFLUXDB_PORT:-8087}/ping > /dev/null 2>&1; do
+# Wait for InfluxDB (container listens on 8086, host forwarded port is $INFLUXDB_PORT)
+info "Checking InfluxDB health endpoint..."
+until curl -sf "http://localhost:${INFLUXDB_PORT}/ping" >/dev/null 2>&1; do
     sleep 2
     echo "   Still waiting for InfluxDB..."
 done
-echo "✅ InfluxDB ready"
+ok "InfluxDB ready"
 
 # Wait for Grafana
-echo "   Checking Grafana..."
-until curl -sf http://localhost:${GRAFANA_PORT:-3001}/api/health > /dev/null 2>&1; do
+info "Checking Grafana health endpoint..."
+until curl -sf "http://localhost:${GRAFANA_PORT}/api/health" >/dev/null 2>&1; do
     sleep 2
     echo "   Still waiting for Grafana..."
 done
-echo "✅ Grafana ready"
+ok "Grafana ready"
 
 echo ""
 echo "🎉 Well-Being Dashboard is ready!"
 echo ""
-echo "📊 Grafana: http://localhost:${GRAFANA_PORT:-3001}"
+echo "📊 Grafana:  http://localhost:${GRAFANA_PORT}"
 echo "   Username: ${GRAFANA_ADMIN_USER:-wellbeing_admin}"
 echo "   Password: ${GRAFANA_ADMIN_PASSWORD:-wellbeing_secure_password}"
 echo ""
-echo "📈 InfluxDB: http://localhost:${INFLUXDB_PORT:-8087}"
+echo "📈 InfluxDB: http://localhost:${INFLUXDB_PORT} (container port 8086)"
 echo "   Organization: ${INFLUXDB_ORG:-local}"
-echo "   Bucket: ${INFLUXDB_BUCKET:-garmin}"
+echo "   Bucket:       ${INFLUXDB_BUCKET:-garmin}"
+echo "   Token:        ${INFLUXDB_TOKEN:-(not set)}"
+echo ""
+echo "� Security reminders:"
+echo "   - Change default credentials BEFORE adding real data"
+echo "   - Ensure pre-commit guard remains active"
 echo ""
 echo "🔧 Next steps:"
-echo "   1. Configure your Garmin credentials in .env"
-echo "   2. Run: PYTHONPATH=. python3 dashboard/scripts/setup_dashboard.py"
-echo "   3. View your dashboard at http://localhost:${GRAFANA_PORT:-3001}"
+echo "   1. (Optional) Run parity & validation: PYTHONPATH=. python3 -m dashboard.tests.test_vectors"
+echo "   2. (Upcoming) Ingestion script will load JSONL -> InfluxDB"
+echo "   3. Access Grafana and import/provision baseline dashboard JSON when added"
+echo ""
+exit 0
