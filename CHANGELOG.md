@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.0.0] - 2025-08-13 - Dashboard Phase 2: Garmin Integration
+
+### 🏃 Added - Garmin Connect Integration
+- **Real Data Fetching**: Complete Garmin Connect API integration
+- **4 Core Metrics**: Steps, Resting HR, Sleep hours, Stress level
+- **Connection Tester**: Verify credentials and see sample data
+- **Flexible Fetching**: Support for date ranges and specific dates
+- **GitHub Actions**: Automated daily fetch capability
+
+### 🔒 Added - Enterprise-Grade Hardening
+- **Privacy-First Telemetry**: No raw metrics exported, only presence flags
+- **Data Integrity Module**: Automatic validation on every fetch
+- **Metrics Presence Mask**: Bitfield tracking for data completeness
+- **Schema Versioning**: v2.0.0 with safe migration path
+- **Comprehensive Tests**: 15+ test cases for edge cases and privacy
+
+### 🛡️ Added - Reliability Features
+- **Timezone/DST Handling**: 20-hour minimum between fetches
+- **Score Invariant Validation**: Bounds checking and band consistency
+- **Corrupted Data Recovery**: Graceful handling of invalid records
+- **CI/CD Phase Guard**: Workflow to prevent regression and scope creep
+- **Formula Hash Tracking**: Detect scoring formula drift
+
+### 📚 Added - Documentation
+- **Phase 2 Guide**: Complete Garmin integration documentation
+- **Troubleshooting**: Connection and data fetch debugging
+- **Privacy Documentation**: Telemetry and data handling policies
+
+### 🤖 Added - Universal Automation Framework
+- **setup-github-automation.sh**: Complete setup for new projects
+- **add-automation-to-existing-project.sh**: Add to existing projects
+- **Auto-detection**: Supports Node, Python, Rust, Go, Java
+- **Issue-driven Development**: Automation from GitHub issues
+- **Claude CLI Integration**: Full compatibility guide
+
 ## [1.0.0] - 2025-08-13 - MVP Production Release
 
 ### 🎉 Wearable Application Complete (Phase 1-4)

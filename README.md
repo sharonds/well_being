@@ -46,7 +46,7 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 
 **🏆 ALL 10 ACCEPTANCE CRITERIA COMPLETE**
 
-### 🎉 Dashboard Extension (Phase 1 COMPLETE + LIVE ✅)
+### 🎉 Dashboard Phase 1 (COMPLETE + LIVE ✅)
 **Dashboard operational with live data visualization:**
 - ✅ Security scaffold (.env.example, precommit guard, checklist) 
 - ✅ Parity Python score engine (Examples A:65, B:88, C:25)
@@ -59,9 +59,21 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 - ✅ **Authentication configured** (InfluxDB token + Grafana login)
 - ✅ **Query Library**: 15+ wellness queries documented in `dashboard/queries/`
 
-**LIVE NOW**: http://localhost:3001 (wellness_admin / wellbeing_secure_password)
-**Status**: ✅ Successfully displaying 30 days of wellness data
-**Setup**: Use manual queries from `dashboard/queries/wellness_queries.md` for best results
+### 🏃 Dashboard Phase 2: Garmin Integration (COMPLETE ✅)
+**Real data from Garmin Connect with enterprise-grade integrity:**
+- ✅ **Garmin Connect API integration** (`fetch_garmin_data.py`)
+- ✅ **4 core metrics fetched**: Steps, Resting HR, Sleep, Stress
+- ✅ **Privacy-first telemetry**: No raw metrics exported, only presence flags
+- ✅ **Data integrity module**: Score validation, metrics mask, schema versioning
+- ✅ **Timezone/DST handling**: 20-hour minimum between fetches
+- ✅ **Comprehensive test suite**: Edge cases, migrations, privacy checks
+- ✅ **CI/CD Phase Guard**: Prevents regression and scope creep
+- ✅ **Observable completeness**: Track data quality without exposing values
+
+**Setup**: Add credentials to `.env`: `GARMIN_EMAIL` and `GARMIN_PASSWORD`
+**Test**: `python3 dashboard/scripts/test_garmin_connection.py`
+**Fetch**: `python3 dashboard/scripts/fetch_garmin_data.py`
+**Status**: Production-ready with hardened integrity checks
 
 ## Development Approach
 

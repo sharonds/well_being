@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install jsonschema influxdb-client
+          pip install jsonschema influxdb-client garminconnect python-dotenv
       
       - name: Validate pipeline components
         run: |
@@ -74,13 +74,39 @@ jobs:
         with:
           python-version: '3.9'
       
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dashboard/requirements.txt
+      
       - name: Generate synthetic data
-        if: github.event.inputs.data_source == 'synthetic' || github.event.schedule
-        id: generate
+        if: github.event.inputs.data_source == 'synthetic'
+        id: generate-synthetic
         run: |
           echo "📊 Generating synthetic wellness data..."
           PYTHONPATH=. python dashboard/scripts/export_historical.py dashboard/data/automated_export.jsonl
           echo "data_file=dashboard/data/automated_export.jsonl" >> $GITHUB_OUTPUT
+      
+      - name: Fetch Garmin data
+        if: github.event.inputs.data_source == 'garmin_api' || github.event.schedule
+        id: generate-garmin
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: |
+          echo "🏃 Fetching data from Garmin Connect..."
+          DAYS="${{ github.event.inputs.days_back || '30' }}"
+          python dashboard/scripts/fetch_garmin_data.py --days $DAYS --output dashboard/data/garmin_export.jsonl
+          echo "data_file=dashboard/data/garmin_export.jsonl" >> $GITHUB_OUTPUT
+      
+      - name: Set output file
+        id: generate
+        run: |
+          if [ "${{ github.event.inputs.data_source }}" == "garmin_api" ] || [ "${{ github.event.schedule }}" == "true" ]; then
+            echo "data_file=dashboard/data/garmin_export.jsonl" >> $GITHUB_OUTPUT
+          else
+            echo "data_file=dashboard/data/automated_export.jsonl" >> $GITHUB_OUTPUT
+          fi
       
       - name: Validate generated data
         run: |
