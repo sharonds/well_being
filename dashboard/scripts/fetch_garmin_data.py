@@ -11,6 +11,12 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from garminconnect import Garmin
 
+# Import Phase 3 modules
+dashboard_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, dashboard_path)
+from scripts.phase3.auto_run_tracker import add_auto_run_flag
+from scripts.phase3.battery_safeguard import should_skip_battery
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -108,8 +114,12 @@ class GarminWellnessFetcher:
             record['score'] = score
             record['band'] = self.get_band(score)
             
+            # Phase 3: Add auto-run flag (AC1)
+            record = add_auto_run_flag(record)
+            
             logger.info(f"Fetched data for {date_str}: Score={score}, Steps={steps}, "
-                       f"RHR={resting_hr}, Sleep={sleep_hours}h, Stress={stress_level}")
+                       f"RHR={resting_hr}, Sleep={sleep_hours}h, Stress={stress_level}, "
+                       f"AutoRun={record.get('auto_run', 0)}")
             
             return record
             
@@ -258,6 +268,11 @@ def main():
     parser.add_argument('--date', type=str, 
                        help='Fetch specific date (YYYY-MM-DD)')
     args = parser.parse_args()
+    
+    # Phase 3: Battery safeguard check (AC4)
+    if should_skip_battery():
+        logger.info("Skipping fetch due to low battery")
+        sys.exit(0)
     
     # Create fetcher and connect
     fetcher = GarminWellnessFetcher(email, password)
