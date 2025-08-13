@@ -83,3 +83,6 @@ ISSUE_PHASE3_DRAFT.md
 # Dashboard security - private data directory
 private/
 *.env
+
+# Large auto-generated dashboard files
+dashboard/grafana/provisioning/dashboards/json/

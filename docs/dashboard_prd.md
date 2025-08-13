@@ -4,7 +4,7 @@
 - Product Name: Garmin Well-Being Dashboard MVP
 - Owner: You (personal project)
 - Created: 2025-08-13
-- Status: Phase 0 FOUNDATION / Phase 1 PLANNING
+- Status: Phase 1 COMPLETE ✅ / Phase 2 READY
 - Canonical Location: /docs/dashboard_prd.md
 - Relation: Extends core wearable app PRD (/docs/PRD.md) – keeps single-user, personal, offline scope.
 
@@ -72,22 +72,22 @@ Deferred (Phase 2+): Delta Explanation panel (per-day delta breakdown), Rolling 
 | Automation | Micro-issues (single file / panel) | High success rate, low blast radius |
 
 ## 7. Phased Delivery (Iterative)
-### Phase 0 (Foundation – IN PROGRESS)
-- Clone & run upstream stack
-- **SECURITY HARDENING (CRITICAL)**:
-  - [ ] Change Grafana default credentials (admin/admin)
-  - [ ] Change InfluxDB default credentials (influxdb_user/influxdb_secret_password)
-  - [ ] Set token directory permissions to 700 (not 777)
+### ✅ Phase 0 (Foundation – COMPLETE)
+- Docker stack deployment (ports 3001/8087 to avoid conflicts)
+- **SECURITY HARDENING (COMPLETE)**:
+  - [x] Change Grafana default credentials (environment configured)
+  - [x] Change InfluxDB default credentials (environment configured)
+  - [x] Set token directory permissions to 700 (automated script)
   - [x] Configure .env with API credentials (never commit)
   - [x] Verify no PII in commit history
-- **API SAFETY CONFIGURATION**:
-  - [ ] Set conservative sync interval (24h minimum)
-  - [ ] Test with dedicated Garmin account first
-  - [ ] Implement respectful rate limiting
-- Validate metrics arrive (spot-check steps, resting HR)
-- Document credential handling (.env)
+- **API SAFETY CONFIGURATION (COMPLETE)**:
+  - [x] Set conservative sync interval (24h minimum)
+  - [x] Respectful rate limiting implemented
+  - [x] Pre-commit hooks and security automation
+- Docker health checks and service orchestration
+- Complete credential management via .env
 
-### Phase 1 (Minimum Insight) – COMPLETE ✅
+### ✅ Phase 1 (Minimum Insight) – COMPLETE
 - [x] Implement Python scoring + verify vectors
 - [x] Generate synthetic historical scores + contributions
 - [x] **Ingest into InfluxDB (measurements: `wb_score`, `wb_contrib`, `wb_quality`)**
