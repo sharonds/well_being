@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### 🔧 Improved - 2025-08-13
+- **Prometheus Metrics**: Added Phase 5 plan metrics
+  - wellness_plans_generated_total counter
+  - wellness_adherence_logged_total counter  
+  - wellness_adherence_avg_pct gauge
+  - wellness_energy_avg_rating gauge
+  
+- **Enhanced Alerting**: Added soft warning for missing daily plan
+  - Info-level alert when no plan generated
+  - Non-blocking with quick fix command
+  - Only active when ENABLE_PLAN_ENGINE=true
+
+- **Architecture Documentation**: ADR-001 Local Compute
+  - Documented "Local compute + tiny insight packet" architecture
+  - Server optional, Health API deferred approach
+  - Privacy-first with offline capability
+  
+- **Import Fixes**: Corrected remaining import paths
+  - alerts.py now uses dashboard.* imports
+  - Ensures stability across all environments
+
 ## [5.0.0] - 2025-08-13 - Phase 5A: Plan Engine
 
 ### 🚀 Added - Plan Engine (Phase A Delivery)
