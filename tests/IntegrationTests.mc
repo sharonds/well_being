@@ -18,6 +18,9 @@ class IntegrationTests {
         results.add(testAutoRefreshNoDuplicates());
         results.add(testLateComputeFallback());
         
+        // Clock boundary edge cases (ChatGPT-5 final hardening)
+        results.add(testAutoRefreshWindowBoundaries());
+        
         // Report results
         var passed = 0;
         var total = results.size();
@@ -194,6 +197,29 @@ class IntegrationTests {
             return passed;
         } catch (e) {
             Sys.println("Late compute fallback test: FAIL - " + e.getErrorMessage());
+            return false;
+        }
+    }
+    
+    // Test auto-refresh window boundaries (ChatGPT-5 final hardening)
+    public static function testAutoRefreshWindowBoundaries() {
+        try {
+            var currentDate = "20250813";
+            var autoRefreshDate = null;
+            var manualRunToday = false;
+            var lastComputeMs = 0;
+            var nowMs = 400000;
+            
+            // Test edge cases: 6:59 should NOT trigger, 7:00 should trigger, 11:00 should NOT trigger
+            var before7am = Scheduler.shouldAuto(currentDate, 6, null, autoRefreshDate, manualRunToday, lastComputeMs, nowMs);
+            var at7am = Scheduler.shouldAuto(currentDate, 7, null, autoRefreshDate, manualRunToday, lastComputeMs, nowMs);  
+            var at11am = Scheduler.shouldAuto(currentDate, 11, null, autoRefreshDate, manualRunToday, lastComputeMs, nowMs);
+            
+            var passed = (!before7am && at7am && !at11am);
+            Sys.println("Window boundaries: 6am=" + (before7am ? "TRIGGER" : "NO") + " 7am=" + (at7am ? "TRIGGER" : "NO") + " 11am=" + (at11am ? "TRIGGER" : "NO") + " " + (passed ? "PASS" : "FAIL"));
+            return passed;
+        } catch (e) {
+            Sys.println("Window boundaries test: FAIL - " + e.getErrorMessage());
             return false;
         }
     }

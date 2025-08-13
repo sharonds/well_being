@@ -115,7 +115,13 @@ assert score_no_hrv == score_phase2 == 88
 **Engine Version**: 1.0.0  
 **Commit Hash**: fe5ab85  
 **Total Test Cases**: 6 (3 core examples + 3 redistribution)  
-**Pass Rate**: 6/6 (100%)  
+**Pass Rate**: 6/6 (100%)
+
+## Formula Integrity Hashes (Drift Detection)
+**Wearable Engine**: `f73a0e49fa35cc7d0fc46435ce626479dac641d54e3fa3ec6faa9e872016425b`  
+**Dashboard Engine**: `61f32b84d64532b3b1fc538a86b68f3edd7732bc038c09d5f18f8e856cbae501`  
+**Hash Date**: August 13, 2025  
+**Purpose**: Detect future formula changes that require parity re-validation  
 
 ## Conclusion
 

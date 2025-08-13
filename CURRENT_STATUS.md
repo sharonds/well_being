@@ -1,5 +1,6 @@
 # Current Project Status - Well-Being MVP
-*Last Updated: August 13, 2025*
+*Last Updated: August 13, 2025*  
+**STATUS_SOURCE**: execution_plan.md (authoritative) | This file: summary view only
 
 ## Overall Progress: 100% Complete ✅
 
