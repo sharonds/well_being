@@ -46,6 +46,16 @@ A Connect IQ watch app that provides daily readiness scoring based on wellness m
 **Remaining (10%):**
 - ❌ Auto-refresh integration (AC3) - Scheduler wiring needed
 
+### 📊 Dashboard Extension (Parallel Track)
+Phase 0 (Security & Parity) Progress:
+- ✅ Security scaffold (.env.example, precommit guard, checklist)
+- ✅ Parity Python score engine (Examples A:65, B:88, C:25)
+- ✅ JSON Schema + validator (daily_record.schema.json + validate script)
+- ✅ Synthetic historical export (30-day JSONL) + integrity validation
+- 🚧 Next: InfluxDB writer (wb_score, wb_contrib, wb_quality) then panel provisioning
+
+Gate: No real personal data ingestion until dashboard_security_checklist fully checked.
+
 ## Development Approach
 
 ### Automation Tools Available
@@ -137,10 +147,10 @@ monkeyc -o build/WellBeing.prg -f source/manifest.xml -y developer_key.der -w
 | B | 12,500 | 48 | 88 | Go for it | (Pending Phase 2 enable) |
 
 ## Roadmap
-
-- **Phase 2** (current): Sleep, stress, persistence, delta
-- **Phase 3**: Morning auto-refresh, HRV toggle, settings
-- **Phase 4**: Polish, performance optimization
+Wearable (Phases 1–4) nearing completion (see status above). Dashboard Phases:
+- Phase 0: Foundation & Security (IN PROGRESS)
+- Phase 1: Minimum Insight Panels (pending Influx writer)
+- Phase 2+: Explainability & Simulation (deferred)
 
 ## Development
 

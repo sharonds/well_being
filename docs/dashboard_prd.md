@@ -78,8 +78,8 @@ Deferred (Phase 2+): Delta Explanation panel (per-day delta breakdown), Rolling 
   - [ ] Change Grafana default credentials (admin/admin)
   - [ ] Change InfluxDB default credentials (influxdb_user/influxdb_secret_password)
   - [ ] Set token directory permissions to 700 (not 777)
-  - [ ] Configure .env with API credentials (never commit)
-  - [ ] Verify no PII in commit history
+  - [x] Configure .env with API credentials (never commit)
+  - [x] Verify no PII in commit history
 - **API SAFETY CONFIGURATION**:
   - [ ] Set conservative sync interval (24h minimum)
   - [ ] Test with dedicated Garmin account first
@@ -88,11 +88,11 @@ Deferred (Phase 2+): Delta Explanation panel (per-day delta breakdown), Rolling 
 - Document credential handling (.env)
 
 ### Phase 1 (Minimum Insight) – Target First Review
-- Implement Python scoring + verify vectors
-- Generate historical scores + contributions
-- Ingest into InfluxDB (measurement: `wb_score`, `wb_contrib`)
-- Build 4 baseline panels (JSON provisioned)
-- Add completeness & error code aggregation
+- [x] Implement Python scoring + verify vectors
+- [x] Generate synthetic historical scores + contributions
+- [ ] Ingest into InfluxDB (measurement: `wb_score`, `wb_contrib`)
+- [ ] Build 4 baseline panels (JSON provisioned)
+- [ ] Add completeness & error code aggregation
 
 ### Phase 2 (Explainability & Quality)
 - Delta decomposition (per metric delta day-over-day)

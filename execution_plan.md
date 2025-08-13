@@ -1,4 +1,4 @@
-## Status Update (12 Aug 2025)
+## Status Update (13 Aug 2025)
 ### ✅ Phase 1: COMPLETE (PR #2)
 - Score Engine with steps + resting HR weight redistribution
 - Recommendation Mapping (3 bands)
@@ -46,9 +46,20 @@
 **Final Item Remaining:**
 - ❌ AC3: Auto-refresh integration (Scheduler wiring to actual execution)
 
-Repository: https://github.com/sharonds/well_being
-Branch protection + CI + CodeQL enabled
+Repository: https://github.com/sharonds/well_being  
+Branch protection + CI + CodeQL enabled  
 Copilot Code Review integration active
+
+### Dashboard Parallel Track (Foundation)
+| Item | Status | Notes |
+|------|--------|-------|
+| Security scaffold (.env.example, precommit guard) | ✅ | Phase 0 gate assets committed |
+| Parity engine (Python) | ✅ | Matches A=65,B=88,C=25 |
+| Schema + validator | ✅ | Integrity rule enforced (<0.01 contrib delta) |
+| Synthetic 30-day export | ✅ | JSONL validates successfully |
+| Influx writer | ⏳ | Next micro-issue |
+| Core panels (4) | ⏳ | Awaiting writer |
+| Real data ingestion | 🔒 | Blocked until checklist complete |
 
 # Execution Plan (Automation-Prioritized)
 
@@ -146,11 +157,11 @@ Legend: Priority (P0 critical blocker; P1 high; P2 medium), Impact (H/M/L), Effo
 - Any attempt to add analytics, external APIs, or cloud sync to automation workflows is rejected until P3 closure.
 - Performance optimization automation beyond simple timing harness.
 
-## Status Update (12 Aug 2025)
-✅ Phase 1 COMPLETE (merged PR #2) — score engine (steps + resting HR), recommendation bands, manual refresh + throttle, baseline tests.
-🚧 Phase 2 IN PROGRESS — adding sleep, stress, persistence, delta UI, Example B test.
-Repository: https://github.com/sharonds/well_being
-Branch protection + CI + CodeQL enabled
+## Status Recap (Wearable Core)
+✅ Phase 1 COMPLETE (PR #2) — score engine (steps + resting HR), recommendation bands, manual refresh + throttle, baseline tests.  
+✅ Phase 2 COMPLETE — sleep, stress, persistence, delta, redistribution, Example B validated.  
+✅ Phase 3 COMPLETE (PR #7) — scheduler window, logging, HRV flag, background support, error handling.  
+🚀 Phase 4 90% (PR #23) — awaiting auto-refresh wiring (AC3).  
 Deterministic acceptance criteria documented in PRD & copilot instructions.
 
 ### Phase 2 Objectives & Success Criteria
