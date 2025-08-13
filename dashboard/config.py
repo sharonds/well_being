@@ -56,19 +56,40 @@ class Config:
     RETENTION_TELEMETRY_DAYS = get_env_value('RETENTION_TELEMETRY_DAYS', 30, int)
     RETENTION_QUARANTINE_DAYS = get_env_value('RETENTION_QUARANTINE_DAYS', 7, int)
     
+    # Phase 5 - Plan Engine thresholds
+    ENABLE_PLAN_ENGINE = get_env_value('ENABLE_PLAN_ENGINE', 'true').lower() in ('true', '1', 'yes')
+    ANOMALY_RHR_THRESHOLD = get_env_value('ANOMALY_RHR_THRESHOLD', 7, int)
+    ANOMALY_SLEEP_MIN = get_env_value('ANOMALY_SLEEP_MIN', 6.5, float)
+    ANOMALY_STRESS_HIGH = get_env_value('ANOMALY_STRESS_HIGH', 80, int)
+    SLEEP_VARIANCE_TARGET = get_env_value('SLEEP_VARIANCE_TARGET', 30, int)  # minutes
+    SLEEP_VARIANCE_THRESHOLD = get_env_value('SLEEP_VARIANCE_THRESHOLD', 60, int)  # minutes
+    
+    # UI feature flags
+    ENABLE_INSIGHT_CARD = get_env_value('ENABLE_INSIGHT_CARD', 'false').lower() in ('true', '1', 'yes')
+    ENABLE_COACH_CHIP = get_env_value('ENABLE_COACH_CHIP', 'false').lower() in ('true', '1', 'yes')
+    
     @classmethod
     def print_config(cls):
         """Print current configuration for debugging."""
-        print("📋 Phase 3 Configuration:")
-        print(f"  Integrity failure threshold: {cls.INTEGRITY_FAILURE_THRESHOLD_PCT}%")
-        print(f"  Integrity analysis window: {cls.INTEGRITY_ANALYSIS_DAYS} days")
-        print(f"  Completeness drop threshold: {cls.COMPLETENESS_DROP_THRESHOLD_PCT}%")
-        print(f"  Completeness windows: {cls.COMPLETENESS_SHORT_WINDOW_DAYS}d vs {cls.COMPLETENESS_LONG_WINDOW_DAYS}d")
-        print(f"  Battery minimum: {cls.BATTERY_MIN_PERCENT}%")
-        print(f"  Auto-run success target: {cls.AUTO_RUN_SUCCESS_TARGET_PCT}%")
-        print(f"  Auto-run analysis window: {cls.AUTO_RUN_ANALYSIS_DAYS} days")
-        print(f"  Quarantine enabled: {cls.QUARANTINE_ENABLED}")
-        print(f"  Retention days: {cls.RETENTION_DAYS} (telemetry: {cls.RETENTION_TELEMETRY_DAYS}, quarantine: {cls.RETENTION_QUARANTINE_DAYS})")
+        print("📋 Phase 3-5 Configuration:")
+        print("\n  Phase 3 Ops:")
+        print(f"    Integrity failure threshold: {cls.INTEGRITY_FAILURE_THRESHOLD_PCT}%")
+        print(f"    Integrity analysis window: {cls.INTEGRITY_ANALYSIS_DAYS} days")
+        print(f"    Completeness drop threshold: {cls.COMPLETENESS_DROP_THRESHOLD_PCT}%")
+        print(f"    Completeness windows: {cls.COMPLETENESS_SHORT_WINDOW_DAYS}d vs {cls.COMPLETENESS_LONG_WINDOW_DAYS}d")
+        print(f"    Battery minimum: {cls.BATTERY_MIN_PERCENT}%")
+        print(f"    Auto-run success target: {cls.AUTO_RUN_SUCCESS_TARGET_PCT}%")
+        print(f"    Auto-run analysis window: {cls.AUTO_RUN_ANALYSIS_DAYS} days")
+        print(f"    Quarantine enabled: {cls.QUARANTINE_ENABLED}")
+        print(f"    Retention days: {cls.RETENTION_DAYS} (telemetry: {cls.RETENTION_TELEMETRY_DAYS}, quarantine: {cls.RETENTION_QUARANTINE_DAYS})")
+        print("\n  Phase 5 Plan Engine:")
+        print(f"    Plan Engine enabled: {cls.ENABLE_PLAN_ENGINE}")
+        print(f"    Anomaly RHR threshold: +{cls.ANOMALY_RHR_THRESHOLD} bpm")
+        print(f"    Anomaly sleep minimum: {cls.ANOMALY_SLEEP_MIN} hours")
+        print(f"    Anomaly stress high: {cls.ANOMALY_STRESS_HIGH}")
+        print(f"    Sleep variance target: ±{cls.SLEEP_VARIANCE_TARGET} min")
+        print(f"    Sleep variance threshold: {cls.SLEEP_VARIANCE_THRESHOLD} min")
+        print(f"    UI: Insight card={cls.ENABLE_INSIGHT_CARD}, Coach chip={cls.ENABLE_COACH_CHIP}")
 
 
 # Backwards compatibility - export key values

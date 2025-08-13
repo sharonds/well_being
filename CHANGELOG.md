@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [5.0.0] - 2025-08-13 - Phase 5A: Plan Engine
+
+### 🚀 Added - Plan Engine (Phase A Delivery)
+- **PlanEngine Module**: dashboard/scripts/plan_engine.py
+  - Deterministic daily training and recovery plans
+  - Anomaly detection (RHR +7, sleep <6.5h, stress >80)
+  - Conservative fallbacks for missing data
+  - Never generates "hard" plans during anomaly conditions
+
+### 🏃 Added - Plan Features
+- **Plan Types**: Easy (20-40m), Maintain (45-60m), Hard (50-70m)
+- **Add-ons**: Core 10m, Breathing 10m, NSDR 10-20m, Walk 20-30m
+- **Anomaly Rules**:
+  - RHR delta ≥ +7 bpm → Easy plan
+  - Sleep < 6.5 hours → Easy plan
+  - Stress > 80 → Easy plan
+  - Sugar flag + HRV decline → Easy plan
+
+### 📊 Added - Adherence Tracking
+- **AdherenceTracker**: dashboard/scripts/adherence_tracker.py
+  - Logs daily task completion
+  - Energy ratings (1-10 scale)
+  - Calculates adherence percentage
+  - Tier-1 task tracking
+
+### ⚙️ Added - Configuration
+- **Plan Engine Settings**: dashboard/config.py
+  - ENABLE_PLAN_ENGINE flag
+  - Configurable anomaly thresholds
+  - Sleep variance targets
+  - UI feature flags (Insight Card, Coach Chip)
+
+### 🔧 Added - Infrastructure
+- **Persistence**: plan_daily.jsonl, adherence_daily.jsonl
+- **Metrics**: Plan engine counters in ops metrics
+- **Privacy**: Exemption for Phase 5 local-only files
+- **CLI Tool**: test_plan_cli.py for testing
+
+### ✅ Added - Tests
+- **18 Unit Tests**: test_plan_engine.py
+  - Anomaly boundary conditions
+  - Band consistency
+  - Conservative plan generation
+  - Never hard on anomaly validation
+
 ### 🔧 Fixed - 2025-08-13
 - **Daily Operations Workflow**: Improved file path consistency
   - Integrity check and remediation now use the same resolved telemetry file
@@ -22,23 +67,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Latest Release Summary
 
-**Current Version: 4.0.0** - Full Production Observability & GA Ready
+**Current Version: 5.0.0** - Phase 5A Plan Engine Delivered
 
 ### 🎯 System Status
 - **Production Ready**: Yes ✅
+- **Plan Engine**: Active ✅
 - **Integrity Rate**: 0.0% 
-- **Test Coverage**: 33+ tests
+- **Test Coverage**: 51+ tests (18 new)
 - **CI/CD Gates**: Active
 - **Observability**: Complete
 - **30-Day Burn-in**: In Progress
 
-### 🚀 Recent Achievements (Phase 3.1-4.0)
+### 🚀 Recent Achievements (Phase 3.1-5.0)
+- **Phase 5A Complete**: Plan Engine with anomaly detection
+- Deterministic daily plans based on wellness metrics
+- Adherence tracking with energy ratings
+- Conservative fallbacks for missing data
+- Full observability stack (metrics, alerts, monitoring)
 - Resolved all ChatGPT-5 review items
-- Eliminated 28.57% integrity failure rate
-- Added CI/CD quality gates with privacy scanning
-- Implemented atomic writes & retention policies
-- Created full observability stack (metrics, alerts, monitoring)
-- Established SLOs and runbooks
 - GA release checklist ready
 
 ## [4.0.0] - 2025-08-13 - Phase 4.0: Production Observability

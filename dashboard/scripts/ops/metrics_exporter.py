@@ -226,9 +226,72 @@ class MetricsCollector:
                 'total_records': 0
             }
     
+    def collect_plan_metrics(self) -> Dict:
+        """Collect Phase 5 plan engine metrics."""
+        try:
+            plan_file = os.path.join(self.data_dir, 'plan_daily.jsonl')
+            adherence_file = os.path.join(self.data_dir, 'adherence_daily.jsonl')
+            
+            # Count plans generated
+            plans_generated = 0
+            plans_skipped_missing_data = 0
+            if os.path.exists(plan_file):
+                with open(plan_file, 'r') as f:
+                    for line in f:
+                        if line.strip():
+                            try:
+                                plan = json.loads(line)
+                                plans_generated += 1
+                                if 'conservative' in plan.get('plan_text', '').lower():
+                                    plans_skipped_missing_data += 1
+                            except json.JSONDecodeError:
+                                continue
+            
+            # Count adherence logged
+            adherence_logged = 0
+            avg_adherence_pct = 0
+            avg_energy = 0
+            if os.path.exists(adherence_file):
+                adherence_records = []
+                with open(adherence_file, 'r') as f:
+                    for line in f:
+                        if line.strip():
+                            try:
+                                record = json.loads(line)
+                                adherence_records.append(record)
+                                adherence_logged += 1
+                            except json.JSONDecodeError:
+                                continue
+                
+                if adherence_records:
+                    total_adherence = sum(r.get('adherence_pct', 0) for r in adherence_records)
+                    avg_adherence_pct = round(total_adherence / len(adherence_records), 1)
+                    
+                    energy_ratings = [r.get('energy_rating') for r in adherence_records if r.get('energy_rating')]
+                    if energy_ratings:
+                        avg_energy = round(sum(energy_ratings) / len(energy_ratings), 1)
+            
+            return {
+                'status': 'ok',
+                'plans_generated': plans_generated,
+                'plans_skipped_missing_data': plans_skipped_missing_data,
+                'adherence_logged': adherence_logged,
+                'avg_adherence_pct': avg_adherence_pct,
+                'avg_energy_rating': avg_energy,
+                'enabled': Config.ENABLE_PLAN_ENGINE
+            }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'error': str(e),
+                'plans_generated': 0,
+                'adherence_logged': 0,
+                'enabled': Config.ENABLE_PLAN_ENGINE
+            }
+    
     def collect_all_metrics(self) -> Dict:
         """Collect all operational metrics."""
-        return {
+        metrics = {
             'timestamp': self.timestamp.isoformat(),
             'integrity': self.collect_integrity_metrics(),
             'auto_run': self.collect_auto_run_metrics(),
@@ -242,6 +305,12 @@ class MetricsCollector:
                 'quarantine_enabled': Config.QUARANTINE_ENABLED
             }
         }
+        
+        # Add Phase 5 plan metrics if enabled
+        if Config.ENABLE_PLAN_ENGINE:
+            metrics['plan_engine'] = self.collect_plan_metrics()
+        
+        return metrics
     
     def export_metrics(self, format: str = 'json') -> str:
         """Export metrics in specified format."""

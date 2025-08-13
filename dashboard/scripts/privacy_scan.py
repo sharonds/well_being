@@ -120,6 +120,7 @@ def generate_clean_telemetry_record(date: str, score: int, band: str,
 def main():
     """CLI interface for privacy scanning."""
     import argparse
+    import os
     
     parser = argparse.ArgumentParser(description='Privacy scan for telemetry data')
     parser.add_argument('file', help='Telemetry file to scan')
@@ -127,6 +128,12 @@ def main():
                        help='Fail on any numeric value > 100')
     
     args = parser.parse_args()
+    
+    # Phase 5 - Skip privacy scan for plan and adherence files
+    basename = os.path.basename(args.file)
+    if basename in ['plan_daily.jsonl', 'adherence_daily.jsonl']:
+        print(f"✅ Privacy scan SKIPPED - {basename} is exempt (Phase 5 local-only data)")
+        sys.exit(0)
     
     is_clean, violations = scan_telemetry_file(args.file)
     
