@@ -39,6 +39,14 @@ Sum(contrib) ~= score/100 (after inverse rounding). Will enforce with validator 
 3. InfluxDB ingestion scripts for wb_score, wb_contrib, wb_quality.
 4. Provision baseline Grafana panels via JSON.
 
+## Historical Export (Synthetic Placeholder)
+Generate 30 days synthetic records (will later be replaced by real fetch):
+```bash
+PYTHONPATH=. python3 dashboard/scripts/export_historical.py dashboard/tests/synth_export.jsonl
+PYTHONPATH=. python3 dashboard/scripts/validate_daily_records.py dashboard/tests/synth_export.jsonl
+```
+You should see `Exported 30 synthetic days` then `VALIDATION PASSED`.
+
 ## Validation Script
 Run schema + integrity validation on sample records:
 ```bash
