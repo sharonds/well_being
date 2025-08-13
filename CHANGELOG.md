@@ -6,24 +6,97 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### 🔧 Fixed - 2025-08-13
+- **Daily Operations Workflow**: Improved file path consistency
+  - Integrity check and remediation now use the same resolved telemetry file
+  - Prevents "file not found" errors in test/CI environments
+  - Automatic test data creation when production data unavailable
+  - Single source of truth for telemetry processing
+
+### 📚 Added - 2025-08-13
+- **Daily Operations Guide**: docs/daily-operations.md
+  - Comprehensive workflow documentation
+  - File resolution logic explained
+  - Troubleshooting guide
+  - Configuration requirements
+
 ## Latest Release Summary
 
-**Current Version: 3.3.0** - Production-ready with full operational guardrails
+**Current Version: 4.0.0** - Full Production Observability & GA Ready
 
 ### 🎯 System Status
 - **Production Ready**: Yes ✅
 - **Integrity Rate**: 0.0% 
 - **Test Coverage**: 33+ tests
 - **CI/CD Gates**: Active
-- **Data Retention**: Automated
+- **Observability**: Complete
+- **30-Day Burn-in**: In Progress
 
-### 🚀 Recent Achievements (Phase 3.1-3.3)
+### 🚀 Recent Achievements (Phase 3.1-4.0)
 - Resolved all ChatGPT-5 review items
 - Eliminated 28.57% integrity failure rate
-- Added CI/CD quality gates
-- Implemented atomic writes
-- Created retention policy
-- 100% auto-run success rate
+- Added CI/CD quality gates with privacy scanning
+- Implemented atomic writes & retention policies
+- Created full observability stack (metrics, alerts, monitoring)
+- Established SLOs and runbooks
+- GA release checklist ready
+
+## [4.0.0] - 2025-08-13 - Phase 4.0: Production Observability
+
+### 🔭 Added - Observability Stack
+- **Metrics Exporter**: dashboard/scripts/ops/metrics_exporter.py
+  - Collects integrity, auto-run, remediation, and ingestion metrics
+  - Supports JSON and Prometheus export formats
+  - Configurable metric windows (7d, 14d, 30d)
+
+### 🚨 Added - Alerting System
+- **Alert Manager**: dashboard/scripts/ops/alerts.py
+  - Threshold-based alerting for all SLOs
+  - Slack webhook integration with console fallback
+  - Critical: Integrity ≥1%, Ingestion >2 days stale
+  - Warning: Auto-run <90%
+
+### 📅 Added - Daily Monitoring
+- **Daily Ops Workflow**: .github/workflows/daily-ops.yml
+  - Automated metrics collection at 8 AM UTC
+  - Remediation execution when needed
+  - 30-day burn-in period tracking
+  - Alert dispatch on threshold breaches
+
+### 📖 Added - Operational Documentation
+- **SLOs Published**: docs/SLOs.md
+  - Integrity failure rate: <1% over 14 days
+  - Auto-run success rate: ≥90% over 14 days  
+  - Data ingestion lag: ≤1 day
+  - Error budget: 0.5% for critical metrics
+
+### 🔧 Added - Runbooks
+- **Operational Runbooks**: docs/runbooks/
+  - integrity-failures.md: Resolution steps for data quality issues
+  - auto-run-failures.md: Troubleshooting automation problems
+  - ingestion-failures.md: Data pipeline recovery procedures
+  - Each with diagnosis, resolution, and prevention steps
+
+### ✅ Added - Release Readiness
+- **Release Checklist**: RELEASE_CHECKLIST.md
+  - Pre-release requirements checklist
+  - Sign-off process and approvals
+  - Rollback plan and success criteria
+  - Validation scripts and smoke tests
+
+### 🚀 Added - Release Automation
+- **Validation Script**: scripts/validate_release.sh
+  - 40+ automated checks across 7 categories
+  - Code quality, operations, CI/CD, documentation
+  - Real-time metrics validation
+  - Pass/fail summary with recommendations
+
+### 📊 Metrics
+- **P1 Tasks Complete**: 5/5 (100%)
+- **Observability Coverage**: Full stack
+- **Alert Channels**: Slack + console
+- **Runbooks Created**: 3 critical paths
+- **Burn-in Period**: 30 days started
 
 ## [3.3.0] - 2025-08-13 - Phase 3.3: Ops Guardrails & Release Readiness
 

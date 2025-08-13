@@ -34,18 +34,25 @@ jobs:
         run: |
           echo "🔍 Running daily integrity check..."
           
-          # Create sample data if in test mode
-          if [ ! -f "dashboard/data/garmin_wellness.jsonl" ]; then
+          # Determine telemetry file to use
+          TELEMETRY_FILE="dashboard/data/garmin_wellness.jsonl"
+          
+          # Create sample data if no real data exists
+          if [ ! -f "$TELEMETRY_FILE" ]; then
             echo "Creating test data..."
             mkdir -p dashboard/data
-            cat > dashboard/data/test_telemetry.jsonl << 'EOF'
+            TELEMETRY_FILE="dashboard/data/test_telemetry.jsonl"
+            cat > "$TELEMETRY_FILE" << 'EOF'
           {"date": "2025-08-13", "score": 50, "band": "Maintain", "schema_version": "v1.0.0", "auto_run": 1}
           {"date": "2025-08-14", "score": 65, "band": "Maintain", "schema_version": "v1.0.0", "auto_run": 1}
           EOF
           fi
           
+          # Export for use in other steps
+          echo "telemetry_file=$TELEMETRY_FILE" >> $GITHUB_OUTPUT
+          
           # Run integrity check
-          python3 dashboard/scripts/phase3/integrity_monitor.py dashboard/data/*.jsonl --days 14 > integrity_report.txt 2>&1 || true
+          python3 dashboard/scripts/phase3/integrity_monitor.py "$TELEMETRY_FILE" --days 14 > integrity_report.txt 2>&1 || true
           
           # Check results
           if grep -q "Integrity check passed\|Integrity check OK" integrity_report.txt; then
@@ -62,8 +69,11 @@ jobs:
         run: |
           echo "🔧 Running auto-remediation..."
           
+          # Use the same telemetry file from integrity check
+          TELEMETRY_FILE="${{ steps.integrity.outputs.telemetry_file }}"
+          
           # Run remediation
-          python3 dashboard/scripts/phase3/integrity_auto_remediate.py dashboard/data/garmin_wellness.jsonl --dry-run || true
+          python3 dashboard/scripts/phase3/integrity_auto_remediate.py "$TELEMETRY_FILE" --dry-run || true
           
           echo "✅ Remediation complete (dry-run mode in CI)"
       
