@@ -53,6 +53,21 @@ Run schema + integrity validation on sample records:
 PYTHONPATH=. python3 dashboard/scripts/validate_daily_records.py dashboard/tests/sample_daily_records.jsonl
 ```
 Expected: `VALIDATION PASSED`
+
+## InfluxDB Ingestion (Phase 1)
+Ingest validated JSON Lines records into InfluxDB for Grafana visualization:
+```bash
+# Prerequisites: InfluxDB running, .env configured with INFLUXDB_TOKEN
+PYTHONPATH=. python3 dashboard/scripts/ingest_influxdb.py dashboard/tests/synth_export.jsonl
+```
+Creates measurements: `wb_score`, `wb_contrib`, `wb_quality`
+
+### Complete Pipeline Demo
+```bash
+PYTHONPATH=. python3 dashboard/scripts/demo_ingestion.py
+```
+Runs full pipeline: export → validate → ingest. Requires InfluxDB setup.
+
 ## Notes
 - Do not store personal raw exports in repo; use `private/` directory.
 - Formula version pinned via WB_FORMULA_VERSION (.env).
