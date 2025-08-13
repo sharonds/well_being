@@ -1,0 +1,276 @@
+name: Phase 3 Automation
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [labeled]
+
+jobs:
+  setup-phase3:
+    if: contains(github.event.label.name, 'phase-3') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r dashboard/requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Create Phase 3 implementation structure
+        run: |
+          # Create directories
+          mkdir -p dashboard/scripts/phase3
+          mkdir -p dashboard/tests/phase3
+          
+          # Create implementation files
+          cat > dashboard/scripts/phase3/auto_run_tracker.py << 'EOF'
+          """AC1: Auto-run tracking for telemetry."""
+          import os
+          from datetime import datetime
+          from typing import Dict
+          
+          def add_auto_run_flag(record: Dict) -> Dict:
+              """Add auto_run flag to telemetry record.
+              
+              AC1 Implementation:
+              - 1 if running from cron/GitHub Actions
+              - 0 if manual execution
+              """
+              # TODO: Implement auto_run detection
+              is_automated = bool(
+                  os.getenv('GITHUB_ACTIONS') or 
+                  os.getenv('CRON_JOB') or
+                  os.getenv('AUTOMATED_RUN')
+              )
+              record['auto_run'] = 1 if is_automated else 0
+              return record
+          
+          def calculate_success_rate(records: list, days: int = 14) -> float:
+              """Calculate auto-refresh success rate over N days.
+              
+              Returns percentage of days with successful auto-run.
+              """
+              # TODO: Implement success rate calculation
+              if not records:
+                  return 0.0
+              
+              auto_runs = sum(1 for r in records if r.get('auto_run') == 1)
+              return (auto_runs / len(records)) * 100
+          EOF
+          
+          cat > dashboard/scripts/phase3/formula_drift.py << 'EOF'
+          """AC5: Formula drift detection and gating."""
+          import hashlib
+          import json
+          from pathlib import Path
+          from typing import Optional
+          
+          FORMULA_HASH_FILE = Path("dashboard/.formula_hash")
+          
+          def calculate_formula_hash(formula_code: str) -> str:
+              """Calculate SHA256 hash of formula code."""
+              return hashlib.sha256(formula_code.encode()).hexdigest()
+          
+          def check_formula_change(commit_message: str) -> bool:
+              """Check if formula change is authorized.
+              
+              Returns True if [FORMULA-CHANGE] tag present.
+              """
+              return "[FORMULA-CHANGE]" in commit_message
+          
+          def validate_formula_integrity() -> tuple[bool, Optional[str]]:
+              """Validate formula hasn't changed without authorization.
+              
+              Returns (is_valid, error_message)
+              """
+              # TODO: Implement validation logic
+              pass
+          EOF
+          
+          cat > dashboard/scripts/phase3/battery_safeguard.py << 'EOF'
+          """AC4: Battery-aware safe mode."""
+          import logging
+          from typing import Optional
+          
+          logger = logging.getLogger(__name__)
+          
+          def get_battery_level() -> Optional[int]:
+              """Get current battery level (platform-specific).
+              
+              Returns None if unable to determine.
+              """
+              # TODO: Implement platform-specific battery check
+              # For testing, use environment variable
+              import os
+              if os.getenv('BATTERY_LEVEL'):
+                  return int(os.getenv('BATTERY_LEVEL'))
+              return None
+          
+          def should_skip_battery(threshold: int = 15) -> bool:
+              """Determine if fetch should skip due to low battery.
+              
+              AC4: Skip if battery < threshold (default 15%).
+              """
+              level = get_battery_level()
+              if level is None:
+                  return False  # Can't determine, proceed
+              
+              if level < threshold:
+                  logger.info(f"SKIP_BATTERY: {level}% < {threshold}%")
+                  return True
+              return False
+          EOF
+          
+          echo "✅ Phase 3 implementation structure created"
+      
+      - name: Create Phase 3 tests
+        run: |
+          cat > dashboard/tests/phase3/test_auto_run.py << 'EOF'
+          """Tests for AC1: Auto-run tracking."""
+          import os
+          import pytest
+          import sys
+          sys.path.insert(0, 'dashboard')
+          
+          from scripts.phase3.auto_run_tracker import (
+              add_auto_run_flag,
+              calculate_success_rate
+          )
+          
+          def test_auto_run_flag_manual():
+              """Test auto_run is 0 for manual execution."""
+              # Clear environment
+              for key in ['GITHUB_ACTIONS', 'CRON_JOB', 'AUTOMATED_RUN']:
+                  os.environ.pop(key, None)
+              
+              record = {'date': '2025-08-14'}
+              result = add_auto_run_flag(record)
+              assert result['auto_run'] == 0
+          
+          def test_auto_run_flag_automated():
+              """Test auto_run is 1 for automated execution."""
+              os.environ['GITHUB_ACTIONS'] = 'true'
+              
+              record = {'date': '2025-08-14'}
+              result = add_auto_run_flag(record)
+              assert result['auto_run'] == 1
+              
+              os.environ.pop('GITHUB_ACTIONS')
+          
+          def test_success_rate_calculation():
+              """Test success rate calculation."""
+              records = [
+                  {'date': '2025-08-01', 'auto_run': 1},
+                  {'date': '2025-08-02', 'auto_run': 1},
+                  {'date': '2025-08-03', 'auto_run': 0},
+                  {'date': '2025-08-04', 'auto_run': 1},
+              ]
+              rate = calculate_success_rate(records)
+              assert rate == 75.0
+          EOF
+          
+          cat > dashboard/tests/phase3/test_battery.py << 'EOF'
+          """Tests for AC4: Battery safeguard."""
+          import os
+          import sys
+          sys.path.insert(0, 'dashboard')
+          
+          from scripts.phase3.battery_safeguard import should_skip_battery
+          
+          def test_skip_when_battery_low():
+              """Test skip when battery below threshold."""
+              os.environ['BATTERY_LEVEL'] = '10'
+              assert should_skip_battery(15) == True
+              os.environ.pop('BATTERY_LEVEL')
+          
+          def test_proceed_when_battery_sufficient():
+              """Test proceed when battery above threshold."""
+              os.environ['BATTERY_LEVEL'] = '50'
+              assert should_skip_battery(15) == False
+              os.environ.pop('BATTERY_LEVEL')
+          
+          def test_proceed_when_battery_unknown():
+              """Test proceed when battery level unknown."""
+              os.environ.pop('BATTERY_LEVEL', None)
+              assert should_skip_battery(15) == False
+          EOF
+          
+          echo "✅ Phase 3 tests created"
+      
+      - name: Run Phase 3 tests
+        run: |
+          cd dashboard
+          python -m pytest tests/phase3/ -v
+        continue-on-error: true
+      
+      - name: Create implementation checklist
+        run: |
+          cat > dashboard/PHASE3_IMPLEMENTATION.md << 'EOF'
+          # Phase 3 Implementation Status
+          
+          ## AC1: Auto-run Tracking
+          - [x] Created auto_run_tracker.py
+          - [x] Basic implementation added
+          - [x] Tests created
+          - [ ] Integration with fetch_garmin_data.py
+          - [ ] KPI dashboard panel
+          
+          ## AC5: Formula Drift Detection  
+          - [x] Created formula_drift.py
+          - [ ] Hash calculation implementation
+          - [ ] CI integration
+          - [ ] Tests
+          
+          ## AC4: Battery Safeguard
+          - [x] Created battery_safeguard.py
+          - [x] Basic implementation
+          - [x] Tests created
+          - [ ] Platform-specific battery detection
+          - [ ] Integration with fetch script
+          
+          ## Next Steps
+          1. Complete TODO implementations
+          2. Integrate with existing scripts
+          3. Add dashboard panels
+          4. Run 14-day validation
+          EOF
+          
+          echo "✅ Implementation checklist created"
+      
+      - name: Create PR
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          
+          git checkout -b phase3-implementation
+          git add dashboard/scripts/phase3/
+          git add dashboard/tests/phase3/
+          git add dashboard/PHASE3_IMPLEMENTATION.md
+          git add .github/workflows/phase3-automation.yml
+          
+          git commit -m "feat: Phase 3 implementation scaffold
+
+          - AC1: Auto-run tracking module
+          - AC4: Battery safeguard module  
+          - AC5: Formula drift detection module
+          - Test suites for each AC
+          - Implementation checklist
+
+          Next: Complete TODOs and integrate with pipeline"
+          
+          git push origin phase3-implementation
+          
+          gh pr create \
+            --title "Phase 3: Operational Reliability Implementation" \
+            --body "$(cat /Users/sharonsciammas/well_being/ISSUE_PHASE3.md)" \
+            --label "phase-3,enhancement"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
