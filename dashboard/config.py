@@ -51,6 +51,11 @@ class Config:
     MAX_ERROR_SAMPLES = get_env_value('MAX_ERROR_SAMPLES', 10, int)
     QUARANTINE_ENABLED = get_env_value('QUARANTINE_ENABLED', 'false').lower() in ('true', '1', 'yes')
     
+    # Retention policy
+    RETENTION_DAYS = get_env_value('RETENTION_DAYS', 30, int)
+    RETENTION_TELEMETRY_DAYS = get_env_value('RETENTION_TELEMETRY_DAYS', 30, int)
+    RETENTION_QUARANTINE_DAYS = get_env_value('RETENTION_QUARANTINE_DAYS', 7, int)
+    
     @classmethod
     def print_config(cls):
         """Print current configuration for debugging."""
@@ -63,6 +68,7 @@ class Config:
         print(f"  Auto-run success target: {cls.AUTO_RUN_SUCCESS_TARGET_PCT}%")
         print(f"  Auto-run analysis window: {cls.AUTO_RUN_ANALYSIS_DAYS} days")
         print(f"  Quarantine enabled: {cls.QUARANTINE_ENABLED}")
+        print(f"  Retention days: {cls.RETENTION_DAYS} (telemetry: {cls.RETENTION_TELEMETRY_DAYS}, quarantine: {cls.RETENTION_QUARANTINE_DAYS})")
 
 
 # Backwards compatibility - export key values

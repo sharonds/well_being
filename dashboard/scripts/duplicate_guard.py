@@ -144,9 +144,11 @@ def validate_no_duplicates(filepath: str) -> bool:
                     record = json.loads(line)
                     date = record.get('date', '')
                     schema_version = record.get('schema_version', 'v1.0.0')
+                    # Normalize schema version to prevent v1.0.0 vs 2.0.0 duplicates
+                    normalized_version = normalize_schema_version(schema_version)
                     
                     if date:
-                        key = (date, schema_version)
+                        key = (date, normalized_version)
                         if key in seen:
                             duplicates.append(f"Line {line_num}: {date} (schema {schema_version})")
                         else:
@@ -198,10 +200,12 @@ def main():
         for record in records:
             date = record.get('date', '')
             schema_version = record.get('schema_version', 'v1.0.0')
-            key = (date, schema_version)
+            # Normalize schema version to prevent v1.0.0 vs 2.0.0 duplicates
+            normalized_version = normalize_schema_version(schema_version)
+            key = (date, normalized_version)
             if key in seen:
                 has_internal_dups = True
-                print(f"❌ Internal duplicate found: {date}")
+                print(f"❌ Internal duplicate found: {date} (schema {schema_version})")
             else:
                 seen.add(key)
         

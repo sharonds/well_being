@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from score.engine import compute_score, MetricInputs, ScoreFlags
 from config import Config
+from utils.file_utils import atomic_write_jsonl
 
 
 class IntegrityRemediator:
@@ -153,11 +154,11 @@ class IntegrityRemediator:
             shutil.copy2(self.file_path, backup_path)
             print(f"📦 Backed up original to {backup_path}")
             
-            # Write remediated records
+            # Write remediated records using atomic write
             valid_records = unchanged_records + fixed_records
-            with open(self.file_path, 'w') as f:
-                for record in valid_records:
-                    f.write(json.dumps(record) + '\n')
+            if not atomic_write_jsonl(valid_records, self.file_path):
+                print(f"❌ Failed to write remediated records")
+                return report
             
             # Quarantine bad records if enabled
             if Config.QUARANTINE_ENABLED and quarantined_records:
@@ -165,9 +166,8 @@ class IntegrityRemediator:
                     self.quarantine_dir,
                     f"quarantine_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
                 )
-                with open(quarantine_file, 'w') as f:
-                    for record in quarantined_records:
-                        f.write(json.dumps(record) + '\n')
+                if not atomic_write_jsonl(quarantined_records, quarantine_file):
+                    print(f"⚠️ Failed to write quarantine file")
                 print(f"🔒 Quarantined {len(quarantined_records)} records to {quarantine_file}")
         
         # Generate report

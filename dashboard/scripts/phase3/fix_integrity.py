@@ -14,6 +14,7 @@ from typing import Dict, List, Tuple
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from score.engine import compute_score, MetricInputs, ScoreFlags
+from utils.file_utils import atomic_write_jsonl
 
 
 def recalculate_record(record: Dict) -> Tuple[Dict, bool]:
@@ -102,11 +103,12 @@ def fix_integrity_issues(input_file: str, output_file: str = None) -> Dict:
     # Write back if changes were made
     if changes_made > 0:
         print(f"\n✏️ Writing {len(updated_records)} corrected records to {output_file}")
-        # Write records back to file
-        with open(output_file, 'w') as f:
-            for record in updated_records:
-                f.write(json.dumps(record) + '\n')
-        print(f"✅ Fixed {changes_made} records ({score_fixes} scores, {band_fixes} bands)")
+        # Use atomic write to prevent corruption
+        if atomic_write_jsonl(updated_records, output_file):
+            print(f"✅ Fixed {changes_made} records ({score_fixes} scores, {band_fixes} bands)")
+        else:
+            print(f"❌ Failed to write corrected records")
+            return None
     else:
         print("✅ No corrections needed - all records are valid")
     
