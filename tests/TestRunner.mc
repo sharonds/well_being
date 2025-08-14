@@ -22,6 +22,12 @@ class TestRunner {
     results.add(testSchedulerLateOpen());
     results.add(testHRVWeighting());
     results.add(testLoggerRingBuffer());
+    
+    // QR Encoder tests (T-001)
+    var qrTests = new QREncoderTests();
+    results.add(qrTests.testQREncoderBasic(Logger));
+    results.add(qrTests.testQRPayloadMatchesJson(Logger));
+    results.add(qrTests.testQREncoderErrorHandling(Logger));
         
         // Report results
         var passed = 0;

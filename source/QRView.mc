@@ -2,10 +2,25 @@ using Toybox.WatchUi as Ui;
 
 class QRView extends Ui.View {
     var packetJson;
+    var qrMatrix;
 
     function initialize(jsonStr as String) {
         View.initialize();
         packetJson = jsonStr;
+        qrMatrix = null;
+        
+        // Generate QR code matrix
+        if (packetJson != null) {
+            try {
+                qrMatrix = QREncoder.encode(packetJson);
+                if (qrMatrix == null) {
+                    Logger.add(Logger.WARNING, "QR generation failed, falling back to JSON");
+                }
+            } catch (e) {
+                Logger.add(Logger.ERROR, "QR encoding error: " + e.getErrorMessage());
+                qrMatrix = null;
+            }
+        }
     }
 
     function onUpdate(dc) {
@@ -20,35 +35,50 @@ class QRView extends Ui.View {
             return;
         }
 
-        // Placeholder: draw a simple dense grid to aid scanning of compact payloads
-        // In production, swap with a real QR encoder (module or pre-rendered image).
-        var size = (w < h ? w : h) - 40;
-        var cells = 41; // placeholder cell count (not real QR)
-        var cell = size / cells;
-        var left = (w - size) / 2;
-        var top = (h - size) / 2;
+        // Draw QR code or show fallback
+        if (qrMatrix != null) {
+            drawQRCode(dc, qrMatrix, w, h);
+        } else {
+            // Fallback to JSON view hint if QR generation failed
+            dc.drawText(w/2, h/2, Ui.FONT_SMALL, "QR failed", Ui.TEXT_JUSTIFY_CENTER);
+            dc.drawText(w/2, h/2 + 20, Ui.FONT_XTINY, "Press UP for JSON", Ui.TEXT_JUSTIFY_CENTER);
+        }
 
-        // Pseudo-encoding: toggle cells based on hash of packet
-        var hash = _hash(packetJson);
-        for (var y = 0; y < cells; y += 1) {
-            for (var x = 0; x < cells; x += 1) {
-                var bit = ((hash + (x*31 + y*17)) % 3) == 0;
-                if (bit) {
-                    dc.fillRectangle(left + x*cell, top + y*cell, cell, cell);
+        // Footer hint
+        dc.drawText(w/2, h-16, Ui.FONT_XTINY, "UP=JSON BACK=Exit", Ui.TEXT_JUSTIFY_CENTER);
+    }
+    
+    function drawQRCode(dc, matrix, screenW, screenH) {
+        var matrixSize = matrix.size();
+        var availableSize = (screenW < screenH ? screenW : screenH) - 50;
+        var cellSize = availableSize / matrixSize;
+        
+        // Ensure cell size is at least 1 pixel
+        if (cellSize < 1) {
+            cellSize = 1;
+            availableSize = matrixSize;
+        }
+        
+        var qrSize = cellSize * matrixSize;
+        var left = (screenW - qrSize) / 2;
+        var top = (screenH - qrSize) / 2;
+        
+        // Draw white background with border
+        dc.setColor(Ui.COLOR_WHITE, Ui.COLOR_BLACK);
+        var borderSize = 4;
+        dc.fillRectangle(left - borderSize, top - borderSize, 
+                         qrSize + 2 * borderSize, qrSize + 2 * borderSize);
+        
+        // Draw QR modules
+        dc.setColor(Ui.COLOR_BLACK, Ui.COLOR_WHITE);
+        for (var y = 0; y < matrixSize; y++) {
+            for (var x = 0; x < matrixSize; x++) {
+                if (matrix[y][x]) {
+                    dc.fillRectangle(left + x * cellSize, top + y * cellSize, 
+                                    cellSize, cellSize);
                 }
             }
         }
-
-    // Footer hint
-    dc.drawText(w/2, h-16, Ui.FONT_XTINY, "UP=JSON BACK=Exit", Ui.TEXT_JUSTIFY_CENTER);
-    }
-
-    function _hash(s as String) as Number {
-        var h = 0;
-        for (var i = 0; i < s.length(); i += 1) {
-            h = (h * 31 + s.charCodeAt(i)) % 1000003;
-        }
-        return h;
     }
 
     function onKey(evt) {
