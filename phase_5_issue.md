@@ -1,7 +1,12 @@
 # Phase 5 – Issue Doc: Plan Engine and Phase A Delivery
 
 Owner: @sharonds
-Status: In Progress
+Status: In Pr- [x] Security: Harden local static servers; resolve CodeQL alerts
+- [ ] Watch: Replace placeholder QR with real encoder; keep JSON fallback
+- [ ] Web: Add client-side FIT upload (browser FIT parser → IndexedDB)
+- [ ] Web: Q&A v0 with canned queries (trends, deltas, anomalies)
+- [ ] Docs: README "How-to" with scan/paste steps and screenshots
+- [ ] Optional: SDK integration for automated ingestion (Phase 5B+)ess
 Date: 2025-08-14
 
 ## Goals
@@ -16,7 +21,13 @@ Date: 2025-08-14
 
 ## Out of scope (later phases)
 - Start timer/logging, Focus screen, Meditation nudge confidence model, Settings UI expansion.
-- iOS companion app, server ingestion, Garmin Health API.
+- iOS companion app, server ingestion.
+
+## MVP Path (Time-to-Market Priority)
+1. **Watch QR encoder** (immediate): Replace placeholder with real QR; keep JSON fallback
+2. **Client-side FIT upload** (fast TTM): Browser-based FIT parsing → IndexedDB; 2+ months history
+3. **Q&A v0** (deterministic): Canned queries on stored data; trends/deltas/anomalies
+4. **SDK integration** (later): Automated ingestion; full health API when mature
 
 ## Deliverables
 1) Module: PlanEngine
@@ -46,6 +57,7 @@ Date: 2025-08-14
 - JSON Schema: validate envelope + payload; version-gated parsing (lightweight validator)
 - E2E: Playwright harness validates import + IndexedDB
  - Security: local dev servers hardened against path traversal and stack trace reflection (CodeQL green)
+ - Note: Security hardening applies to local tooling only (serve script + e2e harness); no runtime app changes
 
 6) Config + feature flags
 - dashboard/config.py additions: thresholds (anomaly, sleep variance), windows (trend), flags (ENABLE_PLAN_ENGINE, ENABLE_INSIGHT_CARD, ENABLE_COACH_CHIP)
@@ -95,3 +107,4 @@ Date: 2025-08-14
 - docs/PRD.md (Section 7.2 formulas)
 - .github/workflows/daily-ops.yml
 - phase_3_2_issue.md, phase_3_3_issue.md, phase_4_issue.md
+ - CHANGELOG.md: entry for web import + security hardening

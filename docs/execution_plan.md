@@ -49,7 +49,40 @@
 Repository: https://github.com/sharonds/well_being  
 Branch protection + CI + CodeQL enabled  
 
-## Dashboard Extension Status (13 Aug 2025)
+## Phase 5: MVP Web Import + Q&A (In Progress)
+
+### Goals
+- Fast time-to-market with historical data insights
+- Privacy-first: client-side parsing, no backend required
+- Iterative: QR encoder → FIT upload → Q&A → SDK (later)
+
+### MVP Path
+1. **Watch QR encoder** (immediate)
+   - Replace placeholder grid with alphanumeric QR
+   - Validate scan into web import; keep JSON fallback
+   - Branch: phase-5-watch-qr-encoder
+
+2. **Client-side FIT upload** (fast TTM)
+   - Browser-based FIT parsing (JS library or WASM)
+   - Map to insight payloads; store in IndexedDB
+   - Enables 2+ months historical analysis without SDK complexity
+   - Branch: phase-5-fit-upload
+
+3. **Q&A v0** (deterministic)
+   - Canned queries: trends, deltas, band transitions, anomaly flags
+   - Render from IndexedDB; no LLM required initially
+   - Branch: phase-5-qa-v0
+
+4. **SDK integration** (Phase 5B+)
+   - Automated companion app when architecture matures
+   - Full Health API integration with MFA handling
+
+### Current Status
+- ✅ Web import (QR/paste) working with e2e tests
+- ✅ IndexedDB storage with schema validation
+- ✅ Security hardening (CodeQL green)
+- 🔄 QR encoder (placeholder → real implementation)
+- ⏳ FIT upload planning
 
 ### ✅ Dashboard Phase 1: COMPLETE
 - Docker infrastructure (Grafana:3001, InfluxDB:8087)

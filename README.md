@@ -338,18 +338,26 @@ Before ingesting personal Garmin data into the planned local dashboard:
 
 Personal-use only; unofficial API access may break or violate ToS – proceed conservatively.
 
-## Phase 5: Web Import (QR or Paste)
+## Phase 5: Web Import (QR or Paste) + FIT Upload
 
 Zero-backend import to view Today + History in your browser:
 
+**Current (Working):**
 - ADR: docs/adr/ADR-0005-local-insight-packet-qr.md
 - Spec: docs/specs/QR-Insight-Packet-and-Web-Import.md
 - Import page: web/import/index.html
 - Sample packet: docs/specs/insight_packet_v1.sample.json
 
+**MVP Roadmap:**
+1. **Watch QR encoder**: Replace placeholder grid with real QR; validate scan
+2. **Client-side FIT upload**: Browser FIT parser → IndexedDB; 2+ months history for Q&A
+3. **Q&A v0**: Deterministic queries (trends, deltas, anomalies) on stored data
+4. **SDK integration** (later): Automated companion app when mature
+
 Notes:
 - QR scan requires a secure context (https or localhost) and camera permission.
 - Paste import works everywhere and is the recommended fallback.
+- FIT upload will enable rich historical analysis without MFA/companion complexity.
 
 ### E2E harness (optional)
 - Prereq: Node 18+ and Playwright installed (`npm i -D playwright` then `npx playwright install chromium`).
